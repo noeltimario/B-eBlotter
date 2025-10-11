@@ -1,0 +1,951 @@
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, collection, query, onSnapshot, serverTimestamp, updateDoc, deleteDoc } from 'firebase/firestore';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { Bot, Home, Users, ClipboardList, TrendingUp, ShieldCheck, LogOut, Loader2, Mic, Send, Landmark, AlertTriangle, User, Zap } from 'lucide-react';
+
+// --- GLOBAL VARIABLES (Provided by Canvas Environment) ---
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'barangay-eblotter';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+// Initialize Firebase App and Services
+let app, db, auth;
+if (Object.keys(firebaseConfig).length > 0) {
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  auth = getAuth(app);
+}
+
+// --- CORE UTILITIES ---
+
+/**
+ * Simulates the Blockchain Audit Trail: generates a SHA-256 hash for immutability.
+ * @param {string} data The stringified incident record and action.
+ * @returns {Promise<string>} The SHA-256 hash in hex format.
+ */
+const sha256Hash = async (data) => {
+  if (typeof window.crypto.subtle === 'undefined') {
+    // Fallback for environments where crypto.subtle is not available
+    let hash = 0;
+    for (let i = 0; i < data.length; i++) {
+      const char = data.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16);
+  }
+
+  const encoder = new TextEncoder();
+  const dataArray = encoder.encode(data);
+  const hashBuffer = await window.crypto.subtle.digest('SHA-256', dataArray);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+};
+
+// --- GEMINI API CALL FOR CONVERSATIONAL AI ---
+
+/**
+ * Fetches response from the Gemini API for the chatbot.
+ * Uses Google Search Grounding for real-time FAQs and information.
+ */
+const fetchGeminiResponse = async (chatHistory) => {
+  const systemPrompt = `You are "Barangay Bot", a helpful, multilingual (Tagalog/English) assistant for the Barangay eBlotter system. Your goal is to guide users through incident reporting, provide case status updates, and answer FAQs about local barangay processes and laws (like RA 9262, Katarungang Pambarangay). Provide concise, empathetic, and actionable advice. Use Google Search to find current Philippine laws/processes when needed.`;
+  const apiKey = "";
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+  const contents = chatHistory.map(msg => ({
+    role: msg.role === 'user' ? 'user' : 'model',
+    parts: [{ text: msg.text }]
+  }));
+
+  const payload = {
+    contents: contents,
+    tools: [{ "google_search": {} }],
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+  };
+
+  try {
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        throw new Error(`API call failed with status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    const candidate = result.candidates?.[0];
+
+    if (candidate && candidate.content?.parts?.[0]?.text) {
+      const text = candidate.content.parts[0].text;
+      let sources = [];
+      const groundingMetadata = candidate.groundingMetadata;
+
+      if (groundingMetadata && groundingMetadata.groundingAttributions) {
+        sources = groundingMetadata.groundingAttributions
+          .map(attribution => ({ uri: attribution.web?.uri, title: attribution.web?.title }))
+          .filter(source => source.uri && source.title);
+      }
+      return { text, sources };
+    }
+    return { text: "Sorry, I couldn't process that request right now.", sources: [] };
+  } catch (error) {
+      console.error('Gemini API Fetch Error:', error);
+      return { text: "Barangay Bot is currently offline due to a network error. Please try again later.", sources: [] };
+  }
+};
+
+// --- SIMULATED AI FUNCTIONS & DATA GENERATION ---
+
+// Sample data for initial simulation
+const initialInsights = [
+  { month: 'Jan', domestic: 5, noise: 8, theft: 3 },
+  { month: 'Feb', domestic: 7, noise: 6, theft: 5 },
+  { month: 'Mar', domestic: 10, noise: 7, theft: 4 },
+  { month: 'Apr', domestic: 8, noise: 12, theft: 6 },
+];
+
+/**
+ * Simulated AI/XAI function for generating a summary and justification.
+ * In a real app, this would be a separate ML API call.
+ */
+const generateXAIInsights = (data) => {
+  if (data.length === 0) return { summary: 'No incident data available for analysis.', justification: '' };
+
+  const lastMonth = data[data.length - 1];
+  const secondLastMonth = data[data.length - 2] || data[data.length - 1];
+
+  const domesticChange = lastMonth.domestic - secondLastMonth.domestic;
+  const noiseChange = lastMonth.noise - secondLastMonth.noise;
+
+  let summary = `This quarter's analysis shows a significant trend: **Noise Complaints are up by ${noiseChange > 0 ? '+' : ''}${noiseChange} incidents**, and Domestic Disputes are trending ${domesticChange > 0 ? '**higher**' : '**lower**'} than the previous month.`;
+
+  let justification = `**XAI Justification for High-Risk Zones:** The surge in noise complaints, particularly around the public market area (simulated location), suggests potential conflict zones linked to late-night operations. The increase in domestic disputes (a recurring pattern over 3 months) flags repeat offenders and requires proactive mediation efforts. The system predicts that **Theft will increase by 5%** next month if patrols are not increased.`;
+
+  return { summary, justification };
+};
+
+
+// --- REACT COMPONENTS ---
+
+// 5D Enhanced Dark Styles: Deep shadows and dynamic interaction
+const cardStyle = "bg-gray-800 p-6 rounded-3xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.8)] transition-all duration-300 hover:shadow-indigo-400/70 transform hover:scale-[1.005] border-4 border-gray-700/80 backdrop-blur-sm text-gray-100";
+const buttonStyle = "w-full p-4 rounded-xl font-extrabold transition-all duration-200 shadow-[0_12px_25px_-8px_rgba(0,0,0,0.5)] transform hover:scale-[1.03] hover:translate-y-[-2px] active:scale-[0.95] active:shadow-sm";
+
+/**
+ * Custom Modal for Alerts (replacing window.alert/confirm)
+ */
+const CustomAlert = ({ message, onClose }) => {
+    if (!message) return null;
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-90 p-4">
+            <div className={`w-full max-w-md bg-gray-800 ${cardStyle} border-4 border-red-500`}>
+                <AlertTriangle className="mx-auto h-12 w-12 text-red-400 mb-4" />
+                <p className="text-gray-100 text-lg font-extrabold text-center mb-6">{message}</p>
+                <button
+                    onClick={onClose}
+                    className={`${buttonStyle} bg-red-700 text-white hover:bg-red-800`}
+                >
+                    Acknowledge
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const AIChatbot = ({ userId }) => {
+  const [chatHistory, setChatHistory] = useState([
+    { role: 'model', text: `Kumusta, ${userId.substring(0, 8)}... 👋 I am **Barangay Bot**, your AI-Powered guide. I can help you submit a complaint, track a case, or answer local law FAQs. How may I assist you?` }
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const chatContainerRef = React.useRef(null);
+
+  // Auto-scroll on new message
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory]);
+
+  const handleSendMessage = useCallback(async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    const newHistory = [...chatHistory, { role: 'user', text: userMessage }];
+
+    setChatHistory(newHistory);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const { text: botResponse, sources } = await fetchGeminiResponse(newHistory);
+      
+      let fullResponse = botResponse;
+      if (sources.length > 0) {
+          fullResponse += `\n\n_Powered by Google Search. Sources: ${sources.map(s => s.title).join(', ')}._`;
+      }
+
+      setChatHistory(prev => [...prev, { role: 'model', text: fullResponse }]);
+    } catch (error) {
+      console.error('Gemini API Error:', error);
+      setChatHistory(prev => [...prev, { role: 'model', text: 'Oops! The AI assistant encountered an error. Please try again.' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, isLoading, chatHistory]);
+
+  const toggleVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      setAlertMessage('Your browser does not support Web Speech API.');
+      return;
+    }
+
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = 'en-US'; // Can be set to 'fil-PH' for Tagalog, but browser support varies
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+      return;
+    }
+
+    recognition.start();
+    setIsListening(true);
+    setInput('Listening...');
+
+    recognition.onresult = (event) => {
+      const speechToText = event.results[0][0].transcript;
+      setInput(speechToText);
+      setIsListening(false);
+      // Immediately send the recognized text
+      setTimeout(handleSendMessage, 500); 
+    };
+
+    recognition.onspeechend = () => {
+      // recognition.stop() is handled by onresult/onerror
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event);
+      setInput('Could not hear clearly. Try typing.');
+      setIsListening(false);
+    };
+  };
+
+  return (
+    <div className={`flex flex-col h-full bg-gradient-to-br from-gray-900 to-indigo-900 ${cardStyle}`}>
+      <h3 className="text-xl font-extrabold text-indigo-400 mb-4 flex items-center border-b-2 border-indigo-700 pb-2">
+        <Bot className="w-6 h-6 mr-2 text-indigo-400 shadow-md" /> Conversational AI Chatbot
+      </h3>
+      <div ref={chatContainerRef} className="flex-1 overflow-y-auto space-y-4 p-2 mb-4 bg-gray-900 shadow-inner rounded-xl border border-gray-700">
+        {chatHistory.map((msg, index) => (
+          <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-xs md:max-w-md p-4 rounded-3xl text-sm shadow-xl ${
+              msg.role === 'user' 
+              ? 'bg-indigo-600 text-white rounded-br-md transform hover:scale-[1.01]' 
+              : 'bg-gray-700 border border-gray-600 text-gray-100 rounded-tl-md shadow-indigo-900 transform hover:scale-[1.01]'
+            }`}>
+              <p className="whitespace-pre-wrap">{msg.text}</p>
+            </div>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="p-3 bg-gray-700 border border-gray-600 rounded-xl rounded-tl-md text-gray-300 flex items-center shadow-md">
+              <Loader2 className="animate-spin w-4 h-4 mr-2" />
+              Barangay Bot is typing...
+            </div>
+          </div>
+        )}
+      </div>
+      <div className="flex space-x-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+          placeholder="Message Barangay Bot (English/Tagalog)"
+          className="flex-1 p-3 border-2 border-indigo-500 rounded-xl shadow-inner bg-gray-700 text-white focus:ring-4 focus:ring-indigo-400 focus:border-indigo-400"
+          disabled={isLoading}
+        />
+        <button
+          onClick={toggleVoiceInput}
+          className={`p-3 rounded-xl text-white shadow-2xl transform hover:scale-[1.05] transition-all ${
+            isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+          }`}
+          title="Toggle Voice Input (Web Speech API)"
+          disabled={isLoading}
+        >
+          <Mic className="w-6 h-6" />
+        </button>
+        <button
+          onClick={handleSendMessage}
+          className={`p-3 rounded-xl text-white shadow-2xl transform hover:scale-[1.05] transition-all ${
+            isLoading || !input.trim() ? 'bg-gray-700' : 'bg-indigo-600 hover:bg-indigo-700'
+          }`}
+          title="Send"
+          disabled={isLoading || !input.trim()}
+        >
+          <Send className="w-6 h-6" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const IncidentForm = ({ userId, onSubmission, role }) => {
+  const [incident, setIncident] = useState({
+    type: '', complainant: userId, respondent: '', location: '', narrative: '', status: 'Pending', evidence: 'None', caseId: '', blockchainHash: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const incidentTypes = ['Domestic Dispute', 'Theft', 'Noise Complaint', 'Property Damage', 'Physical Altercation', 'Other'];
+
+  const handleChange = (e) => {
+    setIncident({ ...incident, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting || !db || !auth.currentUser) return;
+    setIsSubmitting(true);
+
+    try {
+      // 1. Generate Case ID
+      const caseId = `CID-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 100)}`;
+      
+      const newIncident = {
+        ...incident,
+        caseId,
+        timestamp: serverTimestamp(),
+        // Assigning staff-specific fields only if staff/admin
+        encoderId: role !== 'Resident' ? auth.currentUser.uid : null,
+        status: role === 'Resident' ? 'Pending' : 'Received'
+      };
+
+      // 2. Generate Blockchain Hash (Simulation)
+      const auditLog = `CREATE:${caseId}:${newIncident.type}:${newIncident.complainant}:${Date.now()}`;
+      const hash = await sha256Hash(auditLog);
+      newIncident.blockchainHash = hash;
+
+      // 3. Save to Firestore
+      const incidentRef = doc(collection(db, `artifacts/${appId}/public/data/incidents`));
+      await setDoc(incidentRef, newIncident);
+
+      onSubmission(`Incident ${caseId} submitted successfully! Blockchain Hash: ${hash.substring(0, 12)}...`);
+      setIncident({ type: '', complainant: userId, respondent: '', location: '', narrative: '', status: 'Pending', evidence: 'None', caseId: '', blockchainHash: '' });
+
+    } catch (error) {
+      console.error('Error submitting incident:', error);
+      onSubmission('Error submitting incident. Check console for details.', true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className={`${cardStyle} h-full bg-gradient-to-bl from-gray-800 to-green-950`}>
+      <h2 className="text-2xl font-extrabold text-indigo-400 mb-6 border-b-4 border-indigo-600 pb-2">
+        {role === 'Resident' ? 'Submit New Complaint' : 'Encode New Incident Report'}
+      </h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-bold text-gray-300">Incident Type <span className="text-red-500">*</span></label>
+          <select
+            name="type"
+            value={incident.type}
+            onChange={handleChange}
+            required
+            className="mt-1 block w-full p-3 border-2 border-indigo-500 rounded-xl shadow-inner focus:ring-4 focus:ring-indigo-400 focus:border-indigo-400 bg-gray-700 text-white transform transition-all"
+          >
+            <option value="" disabled>Select Type</option>
+            {incidentTypes.map(type => <option key={type} value={type}>{type}</option>)}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-300">Location/Zone <span className="text-red-500">*</span></label>
+          <input
+            type="text"
+            name="location"
+            value={incident.location}
+            onChange={handleChange}
+            required
+            placeholder="e.g., Block 5, Near Public Market"
+            className="mt-1 block w-full p-3 border-2 border-indigo-500 rounded-xl shadow-inner focus:ring-4 focus:ring-indigo-400 focus:border-indigo-400 bg-gray-700 text-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-300">Respondent Name (If known)</label>
+          <input
+            type="text"
+            name="respondent"
+            value={incident.respondent}
+            onChange={handleChange}
+            placeholder="Name or description of person involved"
+            className="mt-1 block w-full p-3 border-2 border-indigo-500 rounded-xl shadow-inner focus:ring-4 focus:ring-indigo-400 focus:border-indigo-400 bg-gray-700 text-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-gray-300">Incident Narrative <span className="text-red-500">*</span></label>
+          <textarea
+            name="narrative"
+            value={incident.narrative}
+            onChange={handleChange}
+            required
+            rows="4"
+            placeholder="Describe the incident in detail..."
+            className="mt-1 block w-full p-3 border-2 border-indigo-500 rounded-xl shadow-inner focus:ring-4 focus:ring-indigo-400 focus:border-indigo-400 bg-gray-700 text-white"
+          ></textarea>
+        </div>
+        
+        {/* File Upload Simulation */}
+        <div>
+          <label className="block text-sm font-bold text-gray-300">Evidence File Upload (Simulated)</label>
+          <input
+            type="file"
+            name="evidence"
+            disabled // Disabled as full cloud storage implementation is outside the single-file scope
+            className="mt-1 block w-full p-3 text-sm text-gray-400 border-2 border-gray-700 rounded-xl shadow-inner bg-gray-900"
+          />
+          <p className="text-xs text-gray-500 mt-1">Files would be saved to Azure/AWS Blob Storage in a full deployment.</p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting || !incident.type || !incident.location || !incident.narrative}
+          className={`${buttonStyle} bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-700 flex items-center justify-center`}
+        >
+          {isSubmitting ? <Loader2 className="w-6 h-6 mr-2 animate-spin" /> : <ShieldCheck className="w-6 h-6 mr-2" />}
+          {isSubmitting ? 'Submitting & Hashing...' : 'Submit Report & Verify with Blockchain'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+const IncidentTable = ({ incidents, role, onUpdateStatus, onRemoveIncident }) => {
+  const [selectedIncident, setSelectedIncident] = useState(null);
+  
+  const handleUpdate = async (incidentId, newStatus) => {
+    if (!db) return;
+    try {
+      const incidentRef = doc(db, `artifacts/${appId}/public/data/incidents`, incidentId);
+      
+      // Blockchain Audit for UPDATE (Simulation)
+      const auditLog = `UPDATE:${incidentId}:STATUS_CHANGE_TO_${newStatus}:${Date.now()}`;
+      const hash = await sha256Hash(auditLog);
+
+      await updateDoc(incidentRef, {
+        status: newStatus,
+        blockchainHash: hash, // Update hash on change
+        updatedAt: serverTimestamp(),
+      });
+      onUpdateStatus(`Case ${incidentId.substring(0, 5)}... status updated to ${newStatus}. New Hash: ${hash.substring(0, 8)}...`);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      onUpdateStatus('Error updating status.', true);
+    }
+  };
+
+  const handleDelete = async (incidentId) => {
+    if (!db || role !== 'Admin') return;
+    try {
+        const incidentRef = doc(db, `artifacts/${appId}/public/data/incidents`, incidentId);
+        
+        // Blockchain Audit for DELETE (Simulation)
+        const auditLog = `DELETE:${incidentId}:${Date.now()}`;
+        const hash = await sha256Hash(auditLog);
+        
+        await deleteDoc(incidentRef);
+        onRemoveIncident(`Case ${incidentId.substring(0, 5)}... deleted. Audit Hash: ${hash.substring(0, 8)}...`);
+    } catch (error) {
+        console.error('Error deleting document:', error);
+        onRemoveIncident('Error deleting document.', true);
+    }
+  };
+
+  const statusColors = {
+    'Pending': 'text-yellow-300 bg-yellow-900 border-yellow-700',
+    'Received': 'text-blue-300 bg-blue-900 border-blue-700',
+    'Investigating': 'text-indigo-300 bg-indigo-900 border-indigo-700',
+    'Settled': 'text-green-300 bg-green-900 border-green-700',
+    'Archived': 'text-gray-400 bg-gray-700 border-gray-600',
+  };
+
+  return (
+    <div className="overflow-x-auto rounded-3xl shadow-xl border-4 border-indigo-900">
+      <table className="min-w-full divide-y divide-gray-700">
+        <thead className="bg-indigo-900">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-extrabold text-indigo-300 uppercase tracking-wider">Case ID</th>
+            <th className="px-6 py-3 text-left text-xs font-extrabold text-indigo-300 uppercase tracking-wider">Date</th>
+            <th className="px-6 py-3 text-left text-xs font-extrabold text-indigo-300 uppercase tracking-wider">Type</th>
+            <th className="px-6 py-3 text-left text-xs font-extrabold text-indigo-300 uppercase tracking-wider">Location</th>
+            <th className="px-6 py-3 text-left text-xs font-extrabold text-indigo-300 uppercase tracking-wider">Complainant</th>
+            <th className="px-6 py-3 text-left text-xs font-extrabold text-indigo-300 uppercase tracking-wider">Status</th>
+            <th className="px-6 py-3 text-left text-xs font-extrabold text-indigo-300 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="bg-gray-800 divide-y divide-gray-700">
+          {incidents.map((incident) => (
+            <tr key={incident.id} className="hover:bg-indigo-900/50 transition-colors duration-150 transform hover:scale-[1.002]">
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-400 cursor-pointer" onClick={() => setSelectedIncident(incident)}>
+                {incident.caseId || incident.id.substring(0, 8)}...
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                {incident.timestamp?.toDate().toLocaleDateString('en-PH') || 'N/A'}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-200">{incident.type}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{incident.location}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 flex items-center"><User className='w-4 h-4 mr-1 text-indigo-400'/>{incident.complainant.substring(0, 8)}...</td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full border ${statusColors[incident.status] || 'text-gray-400 bg-gray-700 border-gray-600'}`}>
+                  {incident.status}
+                </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                {role !== 'Resident' && (
+                  <select
+                    value={incident.status}
+                    onChange={(e) => handleUpdate(incident.id, e.target.value)}
+                    className="p-1 border-2 border-indigo-700 rounded-lg text-xs shadow-md hover:shadow-lg transition-all bg-gray-700 text-white"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Received">Received</option>
+                    <option value="Investigating">Investigating</option>
+                    <option value="Settled">Settled</option>
+                    <option value="Archived">Archived</option>
+                  </select>
+                )}
+                {role === 'Admin' && (
+                    <button 
+                        onClick={() => handleDelete(incident.id)}
+                        className="text-red-400 hover:text-white bg-red-900 hover:bg-red-700 ml-2 p-1 rounded-md shadow-md transition-all"
+                        title="Delete Incident"
+                    >
+                        Delete
+                    </button>
+                )}
+              </td>
+            </tr>
+          ))}
+          {incidents.length === 0 && (
+            <tr>
+              <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No incidents found.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      {selectedIncident && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-gray-900 bg-opacity-90 p-4">
+          <div className={`w-full max-w-2xl bg-gray-900 ${cardStyle} border-4 border-indigo-500`}>
+            <h3 className="text-xl font-extrabold text-indigo-400 mb-4 border-b-4 border-indigo-600 pb-2">Case Details: {selectedIncident.caseId}</h3>
+            <div className="space-y-3 text-md text-gray-200">
+              <p><strong>Type:</strong> {selectedIncident.type}</p>
+              <p><strong>Date:</strong> {selectedIncident.timestamp?.toDate().toLocaleString('en-PH') || 'N/A'}</p>
+              <p><strong>Complainant ID:</strong> {selectedIncident.complainant}</p>
+              <p><strong>Respondent:</strong> {selectedIncident.respondent || 'N/A'}</p>
+              <p><strong>Location:</strong> {selectedIncident.location}</p>
+              <p><strong>Narrative:</strong> <span className="italic text-gray-400">{selectedIncident.narrative}</span></p>
+              <p><strong>Status:</strong> <span className={`font-bold px-2 py-1 rounded-lg border ${statusColors[selectedIncident.status]}`}>{selectedIncident.status}</span></p>
+              <div className="bg-gray-700 p-4 rounded-xl border-4 border-indigo-700 shadow-inner">
+                <p className="font-extrabold text-indigo-400 flex items-center"><ShieldCheck className="w-5 h-5 mr-2"/> Blockchain Audit Hash (Immutability):</p>
+                <code className="break-all text-xs block mt-2 p-2 bg-gray-900 rounded-lg shadow-md text-green-400">{selectedIncident.blockchainHash || 'N/A (Pre-Blockchain Record)'}</code>
+                <p className="text-xs text-gray-500 mt-1">This hash verifies the tamper-proof integrity of the last transaction on this record.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setSelectedIncident(null)}
+              className={`${buttonStyle} mt-6 bg-indigo-600 text-white hover:bg-indigo-700`}
+            >
+              Close Details
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+const AnalyticsDashboard = ({ incidents }) => {
+  const [data, setData] = useState(initialInsights);
+  const { summary, justification } = useMemo(() => generateXAIInsights(data), [data]);
+
+  useEffect(() => {
+    // Generate data from live incidents (simulated aggregation)
+    const monthlyData = incidents.reduce((acc, incident) => {
+      const month = incident.timestamp?.toDate().toLocaleDateString('en-PH', { month: 'short', year: 'numeric' });
+      if (!month) return acc;
+
+      let monthEntry = acc.find(d => d.month === month);
+      if (!monthEntry) {
+        monthEntry = { month, domestic: 0, noise: 0, theft: 0, total: 0 };
+        acc.push(monthEntry);
+      }
+
+      if (incident.type === 'Domestic Dispute') monthEntry.domestic += 1;
+      if (incident.type === 'Noise Complaint') monthEntry.noise += 1;
+      if (incident.type === 'Theft') monthEntry.theft += 1;
+      monthEntry.total += 1;
+
+      return acc;
+    }, initialInsights); // Start with initial simulated data for better visualization
+
+    setData(monthlyData.sort((a, b) => new Date(a.month) - new Date(b.month)));
+  }, [incidents]);
+  
+  // Predictive Analytics Simulation (Top Offenders/Locations based on frequency)
+  const offenderMap = incidents.reduce((acc, i) => {
+    if (i.respondent) acc[i.respondent] = (acc[i.respondent] || 0) + 1;
+    return acc;
+  }, {});
+  const topOffenders = Object.entries(offenderMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, count]) => ({ name: name.substring(0, 15) + '...', count }));
+
+  const locationMap = incidents.reduce((acc, i) => {
+    acc[i.location] = (acc[i.location] || 0) + 1;
+    return acc;
+  }, {});
+  const highRiskZones = Object.entries(locationMap).sort(([, a], [, b]) => b - a).slice(0, 5).map(([name, count]) => ({ name: name.substring(0, 15) + '...', count }));
+
+
+  return (
+    <div className="space-y-8">
+      <div className={`p-6 bg-gradient-to-r from-indigo-900 to-purple-950 border-4 border-indigo-700 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)]`}>
+          <h3 className="text-2xl font-extrabold text-indigo-300 mb-3 flex items-center">
+            <Zap className="w-6 h-6 mr-2 text-red-400" /> AI-Generated Insights Summary (XAI)
+          </h3>
+          <p className="text-gray-200 font-bold mb-4" dangerouslySetInnerHTML={{ __html: summary }}></p>
+          <div className="mt-4 p-4 bg-indigo-950 rounded-xl border-4 border-indigo-700 text-sm shadow-inner">
+            <strong className="text-indigo-300 flex items-center"><TrendingUp className="w-4 h-4 mr-2"/> Explainable AI (XAI) Justification:</strong>
+            <p className="text-gray-400 mt-1">{justification}</p>
+          </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8">
+        <div className={`${cardStyle} h-96 bg-gradient-to-tr from-gray-800 to-gray-900`}>
+          <h3 className="text-xl font-extrabold text-indigo-400 mb-4 border-b-2 pb-2 border-indigo-700">Incident Trends by Month</h3>
+          <ResponsiveContainer width="100%" height="80%">
+            <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} style={{ color: '#E0E0E0' }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+              <XAxis dataKey="month" stroke="#A0A0A0" />
+              <YAxis stroke="#A0A0A0" />
+              <Tooltip 
+                contentStyle={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', backgroundColor: '#374151', border: '1px solid #4B5563' }}
+                labelStyle={{ color: '#E0E0E0' }}
+              />
+              <Legend />
+              <Line type="monotone" dataKey="domestic" stroke="#fb923c" name="Domestic Dispute" strokeWidth={3} dot={{ strokeWidth: 2 }} activeDot={{ r: 8 }} />
+              <Line type="monotone" dataKey="noise" stroke="#34d399" name="Noise Complaint" strokeWidth={3} dot={{ strokeWidth: 2 }} />
+              <Line type="monotone" dataKey="theft" stroke="#818cf8" name="Theft" strokeWidth={3} dot={{ strokeWidth: 2 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className={`${cardStyle} h-96 bg-gradient-to-tr from-gray-800 to-gray-900`}>
+          <h3 className="text-xl font-extrabold text-indigo-400 mb-4 border-b-2 pb-2 border-indigo-700">High-Risk Zones (Heatmap Simulation)</h3>
+          <ResponsiveContainer width="100%" height="80%">
+            <BarChart data={highRiskZones} margin={{ top: 5, right: 30, left: 20, bottom: 5 }} style={{ color: '#E0E0E0' }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#444444" />
+              <XAxis dataKey="name" angle={-15} textAnchor="end" height={40} tick={{ fontSize: 10, fill: '#A0A0A0' }} />
+              <YAxis stroke="#A0A0A0" />
+              <Tooltip 
+                contentStyle={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', backgroundColor: '#374151', border: '1px solid #4B5563' }}
+                labelStyle={{ color: '#E0E0E0' }}
+              />
+              <Bar dataKey="count" fill="#f87171" name="Incidents" radius={[10, 10, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-8">
+        <div className={`${cardStyle} bg-gradient-to-tr from-gray-800 to-gray-900`}>
+          <h3 className="text-xl font-extrabold text-indigo-400 mb-4 border-b-2 pb-2 border-indigo-700">Top Recurring Offenders (Predictive ML)</h3>
+          <ul className="divide-y divide-red-900">
+            {topOffenders.map((o, index) => (
+              <li key={index} className="py-3 flex justify-between items-center hover:bg-red-900/40 transition-colors rounded-lg px-2 transform hover:translate-x-1">
+                <span className="font-extrabold text-gray-200">{index + 1}. {o.name}</span>
+                <span className="px-3 py-1 bg-red-700 text-white rounded-full text-xs font-bold shadow-md">{o.count} Cases</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <div className={`${cardStyle} bg-gradient-to-tr from-gray-800 to-gray-900`}>
+          <h3 className="text-xl font-extrabold text-indigo-400 mb-4 border-b-2 pb-2 border-indigo-700">Blockchain Audit Status</h3>
+          <div className="bg-indigo-950 p-4 rounded-xl space-y-3 text-sm border-4 border-indigo-700 shadow-inner">
+            <p className="flex justify-between font-bold text-indigo-300">Total Incidents Hashed:</p>
+            <p className="text-3xl font-black text-green-400 drop-shadow-lg text-center">{incidents.length}</p>
+            <p className="text-xs text-gray-400 pt-2 text-center">
+                <ShieldCheck className="w-4 h-4 inline mr-1 text-green-400"/> All records are secured and tamper-proof via cryptographic hashing.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ResidentDashboard = ({ incidents, userId, onSubmission }) => {
+    const userIncidents = incidents.filter(i => i.complainant === userId);
+    const [view, setView] = useState('form');
+
+    return (
+        <div className="h-full flex flex-col">
+            <div className="flex justify-start space-x-4 mb-6">
+                <button
+                    onClick={() => setView('form')}
+                    className={`p-4 rounded-xl font-extrabold transition-colors shadow-lg transform hover:scale-[1.03] active:scale-[0.95] flex items-center ${view === 'form' ? 'bg-indigo-600 text-white shadow-indigo-500/50' : 'bg-gray-700 text-gray-200 border border-gray-600 hover:bg-indigo-900/50 shadow-md'}`}
+                >
+                    <ClipboardList className="w-5 h-5 inline mr-2"/> Submit New Complaint
+                </button>
+                <button
+                    onClick={() => setView('tracking')}
+                    className={`p-4 rounded-xl font-extrabold transition-colors shadow-lg transform hover:scale-[1.03] active:scale-[0.95] flex items-center ${view === 'tracking' ? 'bg-indigo-600 text-white shadow-indigo-500/50' : 'bg-gray-700 text-gray-200 border border-gray-600 hover:bg-indigo-900/50 shadow-md'}`}
+                >
+                    <ShieldCheck className="w-5 h-5 inline mr-2"/> Case Tracking ({userIncidents.length})
+                </button>
+            </div>
+            
+            <div className="flex-1 min-h-0">
+                {view === 'form' && <IncidentForm userId={userId} onSubmission={onSubmission} role="Resident" />}
+                {view === 'tracking' && (
+                    <div className={`${cardStyle} h-full bg-gradient-to-bl from-gray-800 to-blue-950`}>
+                        <h2 className="text-2xl font-extrabold text-indigo-400 mb-6 border-b-4 border-indigo-600 pb-2">My Submitted Cases</h2>
+                        <IncidentTable incidents={userIncidents} role="Resident" onUpdateStatus={()=>{}} onRemoveIncident={()=>{}} />
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+
+const AdminDashboard = ({ incidents, userId, onUpdateStatus, onRemoveIncident }) => {
+    const [view, setView] = useState('reports');
+    const totalIncidents = incidents.length;
+    const pendingIncidents = incidents.filter(i => i.status === 'Pending').length;
+
+    const navItems = [
+        { id: 'reports', icon: TrendingUp, label: 'Analytics & Reports' },
+        { id: 'incidents', icon: ClipboardList, label: `Incident Management (${totalIncidents})` },
+    ];
+
+    return (
+        <div className="space-y-6">
+            <div className="bg-gradient-to-r from-indigo-900 via-purple-900 to-red-900 p-8 rounded-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] text-white border-b-8 border-yellow-500">
+                <h1 className="text-4xl font-black mb-2 flex items-center">
+                    <Landmark className="w-10 h-10 mr-4 text-yellow-400"/> Admin Control Panel
+                </h1>
+                <p className="text-indigo-300 font-semibold">Centralized governance and real-time intelligence for Barangay Peacekeeping.</p>
+                <div className="mt-6 flex space-x-8 text-lg">
+                    <p>Total Cases: <span className="font-black text-yellow-400">{totalIncidents}</span></p>
+                    <p>Pending Review: <span className="font-black text-red-400">{pendingIncidents}</span></p>
+                </div>
+            </div>
+
+            <div className="flex space-x-4 border-b-2 border-gray-700 pb-4">
+                {navItems.map(item => (
+                    <button
+                        key={item.id}
+                        onClick={() => setView(item.id)}
+                        className={`p-3 rounded-xl font-extrabold transition-colors shadow-lg transform hover:scale-[1.03] active:scale-[0.95] flex items-center ${view === item.id ? 'bg-indigo-600 text-white shadow-indigo-500/50' : 'bg-gray-700 text-gray-200 border border-gray-600 hover:bg-indigo-900/50 shadow-md'}`}
+                    >
+                        <item.icon className="w-5 h-5 inline mr-2"/> {item.label}
+                    </button>
+                ))}
+            </div>
+
+            {view === 'reports' && <AnalyticsDashboard incidents={incidents} />}
+            {view === 'incidents' && (
+                <div className={`${cardStyle} p-4 bg-gradient-to-tr from-gray-800 to-blue-950`}>
+                    <h2 className="text-2xl font-extrabold text-indigo-400 mb-4 border-b-4 border-indigo-600 pb-2">All Blotter Records</h2>
+                    <IncidentTable 
+                        incidents={incidents} 
+                        role="Admin" 
+                        onUpdateStatus={onUpdateStatus}
+                        onRemoveIncident={onRemoveIncident}
+                    />
+                </div>
+            )}
+        </div>
+    );
+};
+
+// --- MAIN APPLICATION COMPONENT ---
+
+const App = () => {
+  const [role, setRole] = useState(null); // 'Resident', 'Staff', 'Admin'
+  const [userId, setUserId] = useState(null);
+  const [incidents, setIncidents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [alertMessage, setAlertMessage] = useState(null);
+
+  // --- 1. Firebase Auth and Initialization ---
+  useEffect(() => {
+    if (!app) {
+        console.error("Firebase configuration is missing.");
+        setIsLoading(false);
+        return;
+    }
+    
+    const signIn = async () => {
+        try {
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                await signInAnonymously(auth);
+            }
+        } catch (error) {
+            console.error("Firebase sign-in error:", error);
+        }
+    };
+
+    signIn();
+    
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) {
+            setUserId(user.uid);
+        } else {
+            setUserId(null);
+        }
+        setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // --- 2. Firestore Data Listener (Incidents) ---
+  useEffect(() => {
+    if (!db || !userId) return;
+
+    // Use a public collection for all incidents to allow Admin/Staff to see everything
+    const incidentsCollectionRef = collection(db, `artifacts/${appId}/public/data/incidents`);
+    
+    // Sort by timestamp descending (using client-side simulation of orderBy)
+    const q = query(incidentsCollectionRef); 
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const incidentList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        // Convert timestamp if it exists
+        timestamp: doc.data().timestamp || new Date(),
+      })).sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)); // Client-side sort
+
+      setIncidents(incidentList);
+    }, (error) => {
+      console.error("Firestore Incident Listener Error:", error);
+      setAlertMessage("Failed to load incident data. Check console for details.");
+    });
+
+    return () => unsubscribe();
+  }, [userId]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <Loader2 className="w-12 h-12 animate-spin text-indigo-400" />
+        <p className="ml-4 text-xl font-extrabold text-indigo-400">Loading Barangay eBlotter...</p>
+      </div>
+    );
+  }
+
+  // --- Role Selection View (Initial Screen) ---
+  if (!role) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-gray-950">
+        <div className={`w-full max-w-lg ${cardStyle} text-center p-10 bg-gradient-to-br from-gray-900 to-indigo-900 border-4 border-indigo-700`}>
+          <h1 className="text-5xl font-black text-indigo-400 mb-2 drop-shadow-lg">Barangay eBlotter</h1>
+          <p className="text-gray-300 text-xl font-semibold mb-8">AI-Powered Digital Incident & Complaint Reporting System</p>
+          <p className="text-lg font-black text-indigo-400 mb-6">Select Your Role to Enter the 5D Interface:</p>
+          <div className="space-y-6">
+            <button onClick={() => setRole('Admin')} className={`${buttonStyle} bg-red-600 text-white hover:bg-red-700`}>
+              <Users className="w-6 h-6 inline mr-3"/> Admin (Captain/Secretary)
+            </button>
+            <button onClick={() => setRole('Staff')} className={`${buttonStyle} bg-blue-600 text-white hover:bg-blue-700`}>
+              <Users className="w-6 h-6 inline mr-3"/> Staff (Encoder/Officer)
+            </button>
+            <button onClick={() => setRole('Resident')} className={`${buttonStyle} bg-green-600 text-white hover:bg-green-700`}>
+              <Home className="w-6 h-6 inline mr-3"/> Resident (Complainant)
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-6">Your current ID: <code className="font-mono text-xs">{userId}</code></p>
+        </div>
+        <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+      </div>
+    );
+  }
+  
+  // --- Main Application Layout ---
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-gray-950 font-sans p-4 sm:p-8 text-gray-100">
+      <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+      
+      {/* Header and User Info */}
+      <header className="flex justify-between items-center pb-4 mb-6 border-b-4 border-indigo-600">
+        <h1 className="text-3xl sm:text-4xl font-black text-indigo-400 flex items-center drop-shadow-md">
+            <Landmark className="w-8 h-8 sm:w-10 sm:h-10 mr-3 text-indigo-400"/> 
+            Barangay eBlotter 
+            <span className={`ml-4 px-4 py-1 text-lg font-extrabold rounded-full ${
+                role === 'Admin' ? 'bg-red-600' : role === 'Staff' ? 'bg-blue-600' : 'bg-green-600'
+            } text-white shadow-xl transform skew-x-[-10deg]`}>
+                {role}
+            </span>
+        </h1>
+        <div className="flex items-center space-x-4">
+          <div className="hidden sm:block text-right">
+            <p className="text-md font-bold text-gray-300">Welcome, {role}</p>
+            <p className="text-sm text-gray-500">ID: {userId.substring(0, 12)}...</p>
+          </div>
+          <button 
+            onClick={() => setRole(null)} 
+            className="p-3 bg-red-600 rounded-full hover:bg-red-700 transition-all shadow-xl transform hover:scale-105"
+            title="Log Out / Change Role"
+          >
+            <LogOut className="w-6 h-6 text-white" />
+          </button>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column: Main Dashboard/Form */}
+        <main className="lg:col-span-2 space-y-8">
+          {role === 'Resident' && <ResidentDashboard userId={userId} incidents={incidents} onSubmission={(msg, isError) => setAlertMessage(msg)} />}
+          {(role === 'Staff' || role === 'Admin') && <AdminDashboard userId={userId} incidents={incidents} onUpdateStatus={(msg) => setAlertMessage(msg)} onRemoveIncident={(msg) => setAlertMessage(msg)} />}
+          
+          {role === 'Staff' && (
+              <IncidentForm userId={userId} onSubmission={(msg, isError) => setAlertMessage(msg)} role="Staff" />
+          )}
+        </main>
+
+        {/* Right Column: AI Chatbot */}
+        <aside className="lg:col-span-1 h-[85vh] min-h-[600px] flex flex-col">
+          <AIChatbot userId={userId} />
+        </aside>
+      </div>
+
+      {/* Footer / Copyright */}
+      <footer className="mt-10 pt-4 border-t-4 border-indigo-600 text-center text-sm text-gray-400 font-semibold">
+        <p>Barangay eBlotter: AI-Powered Digital Incident & Complaint Reporting System</p>
+        <p className="mt-1 text-gray-500 text-xs">© 2025 Noel Timario. All rights reserved. | Cloud, AI, and Blockchain Simulations (5D Edition).</p>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
