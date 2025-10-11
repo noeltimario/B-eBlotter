@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter System</title>
+    <title>Barangay eBlotter 5D System (Demo Mode)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDKs (Included but bypassed for data access in demo mode) -->
@@ -17,10 +17,8 @@
             signOut: () => Promise.resolve(),
             onAuthStateChanged: (auth, callback) => {
                 // In demo mode, simulate immediate login
-                setTimeout(() => {
-                    let role = localStorage.getItem('eBlotter_role') || 'Resident';
-                    callback({ uid: role.toLowerCase() + '-user-id' });
-                }, 10); 
+                let role = localStorage.getItem('eBlotter_role') || 'Resident';
+                callback({ uid: role.toLowerCase() + '-user-id' });
                 return () => {}; // Return unsubscribe mock
             },
             getFirestore: () => ({}),
@@ -44,7 +42,7 @@
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <!-- Crypto-JS for Blockchain Hashing Simulation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
@@ -162,7 +160,7 @@
             <h1 class="text-5xl font-bold neon-text tracking-widest">
                 Barangay eBlotter 
             </h1>
-            <p class="text-lg text-gray-300 mt-2"> Digital Incident & Complaint Reporting System</p>
+            <p class="text-lg text-gray-300 mt-2">AI-Powered Digital Incident & Complaint Reporting System</p>
             <p class="text-xs text-gray-500 mt-1">© ${new Date().getFullYear()} Noel Timario. All Rights Reserved.</p>
             <div id="auth-status" class="mt-4 text-sm text-center">
                 <!-- Status will be dynamically updated here -->
@@ -265,7 +263,10 @@
                     return await fn(...args);
                 } catch (error) {
                     console.warn(`Attempt ${i + 1} failed. Retrying in ${delay * (2 ** i)}ms...`);
-                    if (i === retries - 1) throw error;
+                    if (i === retries - 1) {
+                         // Throw the error after the last attempt
+                         throw error;
+                    }
                     await new Promise(resolve => setTimeout(resolve, delay * (2 ** i)));
                 }
             }
@@ -890,14 +891,15 @@
                     // Use a subtle animation for the response text to appear
                     thinkingMessage.innerHTML = `<span class="font-bold text-cyan-300 mr-2">AI:</span><span class="opacity-0 transition-opacity duration-700">${responseText}</span>`;
                     setTimeout(() => {
-                        thinkingMessage.querySelector('span:last-child').classList.remove('opacity-0');
+                        const span = thinkingMessage.querySelector('span:last-child');
+                        if (span) span.classList.remove('opacity-0');
                     }, 50);
 
                 } catch (error) {
-                    console.error('Gemini API Error:', error);
+                    console.error('Gemini API Error:', error); // Log the full error for debugging
                     thinkingMessage.classList.remove('ai-thinking');
                     thinkingMessage.classList.add('ai-error');
-                    thinkingMessage.innerHTML = `<span class="font-bold text-red-400 mr-2">AI Error:</span> Could not connect to the AI Matrix. Please check your connection.`;
+                    thinkingMessage.innerHTML = `<span class="font-bold text-red-400 mr-2">AI Error:</span> Could not connect to the AI Matrix. Please check your connection or try again. (${error.message || 'Unknown Error'})`;
                 }
 
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -983,7 +985,8 @@
                 contents: [{ parts: [{ text: prompt }] }],
                 systemInstruction: { parts: [{ text: systemPrompt }] },
             };
-
+            
+            // Define the core fetch logic to be retried
             const fetchGemini = async () => {
                 const response = await fetch(GEMINI_API_URL, {
                     method: 'POST',
@@ -991,9 +994,10 @@
                     body: JSON.stringify(payload)
                 });
                 
+                // If the response is not OK (e.g., 429, 500, etc.), throw an error to trigger retry
                 if (!response.ok) {
                     const errorBody = await response.json();
-                    throw new Error(`API returned status ${response.status}: ${errorBody.error?.message || 'Unknown error'}`);
+                    throw new Error(`API returned status ${response.status}: ${errorBody.error?.message || 'Unknown network error'}`);
                 }
 
                 const result = await response.json();
@@ -1002,10 +1006,10 @@
                 return text;
             };
 
+            // Execute the fetch logic with retry mechanism
             return await withRetry(fetchGemini)();
         };
 
     </script>
 </body>
 </html>
-
