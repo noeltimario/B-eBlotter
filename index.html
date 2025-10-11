@@ -3,38 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter 5D System</title>
+    <title>Barangay eBlotter 5D System (Demo Mode)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Included but bypassed for data access in demo mode) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // Expose Firebase utilities globally
+        // Dummy Firebase utility functions for demo mode
         window.firebase = {
-            initializeApp,
-            getAuth,
-            signInAnonymously,
-            signInWithCustomToken,
-            signOut,
-            onAuthStateChanged,
-            getFirestore,
-            doc,
-            addDoc,
-            setDoc,
-            updateDoc,
-            deleteDoc,
-            onSnapshot,
-            collection,
-            query,
-            getDocs,
-            serverTimestamp,
-            arrayUnion,
+            initializeApp: () => ({ name: 'demo-app' }),
+            getAuth: () => ({ currentUser: { uid: 'guest-demo-123' } }),
+            signInAnonymously: () => Promise.resolve({ user: { uid: 'guest-demo-123' } }),
+            signInWithCustomToken: (auth, token) => Promise.resolve({ user: { uid: token.substring(0, 8) + '-user' } }),
+            signOut: () => Promise.resolve(),
+            onAuthStateChanged: (auth, callback) => {
+                // In demo mode, simulate immediate login
+                setTimeout(() => {
+                    let role = localStorage.getItem('eBlotter_role') || 'Resident';
+                    callback({ uid: role.toLowerCase() + '-user-id' });
+                }, 10); 
+                return () => {}; // Return unsubscribe mock
+            },
+            getFirestore: () => ({}),
+            doc: (db, path, id) => ({ path: `${path}/${id}` }),
+            // Data functions are overridden in the main script for in-memory use
+            addDoc: () => Promise.resolve(),
+            updateDoc: () => Promise.resolve(),
+            deleteDoc: () => Promise.resolve(),
+            onSnapshot: (q, callback) => {
+                // Mock listener handled by JS interval
+                return () => {};
+            },
+            collection: () => ({}),
+            query: () => ({}),
+            getDocs: () => Promise.resolve(),
+            serverTimestamp: () => new Date(),
+            arrayUnion: (item) => item,
+            setLogLevel: () => {},
         };
-        setLogLevel('Debug');
     </script>
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -169,7 +174,7 @@
             <div class="dot-pulse">
                 <div></div><div></div><div></div>
             </div>
-            <p class="text-gray-400 mt-4">Initializing Secure 5D Matrix...</p>
+            <p class="text-gray-400 mt-4">Initializing Secure 5D Matrix (Demo Mode)...</p>
         </main>
         
         <!-- Chatbot Container -->
@@ -215,19 +220,33 @@
     </div>
 
     <script>
-        // --- Global Variable Setup from Canvas Environment ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // --- Global Variable Setup (Overridden for Demo Mode) ---
+        const appId = 'demo-app-id';
+        const firebaseConfig = null; // Still null, but ignored
+        const initialAuthToken = null; // Still null, but ignored
         
-        // --- Firebase Globals ---
+        // --- Globals ---
         let app, db, auth;
         let userId = null;
         let userRole = null; // 'Admin', 'Staff', 'Resident', or 'Guest'
         let chartInstance = null;
         
+        // --- In-Memory Data Store & Listener (Replaces Firestore) ---
+        let complaints = [
+            { id: '1', caseId: 'C-98765A', type: 'Noise Violation', location: 'Purok 5, Main Street', narrative: 'Loud karaoke until 3 AM last night. It happens every weekend.', complainantId: 'resident-user-id', complainantRole: 'Resident', status: 'In Investigation', dateFiled: new Date(Date.now() - 86400000).toISOString(), evidenceUrl: `https://placehold.co/200x150/0f172a/fff?text=Evidence+C-98765A`, aiPrediction: 'Noise Violation (Medium)', aiXai: 'Common issue, requires staff intervention.', blockchainHash: '0xabcde12345', auditLog: [{ action: 'FILED', timestamp: new Date(Date.now() - 86400000), hash: '0xabcde12345' }] },
+            { id: '2', caseId: 'C-12345B', type: 'Theft/Robbery', location: 'Market Area', narrative: 'My bicycle was stolen from outside my house this morning. Please help me.', complainantId: 'resident-user-id', complainantRole: 'Resident', status: 'Urgent', dateFiled: new Date(Date.now() - 3600000).toISOString(), evidenceUrl: `https://placehold.co/200x150/0f172a/fff?text=Evidence+C-12345B`, aiPrediction: 'Critical Conflict Zone Alert (URGENT)', aiXai: 'Keyword matching (stolen) triggered high-priority alert.', blockchainHash: '0xdef567890', auditLog: [{ action: 'FILED', timestamp: new Date(Date.now() - 3600000), hash: '0xdef567890' }] },
+            { id: '3', caseId: 'C-54321C', type: 'Domestic Dispute', location: 'Purok 2, Alley 3', narrative: 'Loud arguing and threats heard coming from the house next door. This is the third time this week.', complainantId: 'admin-user-id', complainantRole: 'Admin', status: 'Resolved', dateFiled: new Date(Date.now() - 7200000).toISOString(), evidenceUrl: `https://placehold.co/200x150/0f172a/fff?text=Evidence+C-54321C`, aiPrediction: 'Domestic Conflict (High)', aiXai: 'High severity language detected.', blockchainHash: '0x1a2b3c4d5e', auditLog: [{ action: 'FILED', timestamp: new Date(Date.now() - 7200000), hash: '0x1a2b3c4d5e' }] },
+        ];
+        
+        const updateInMemoryData = () => {
+            // Re-render components immediately to simulate real-time update
+            if (document.getElementById('complaint-list')) renderComplaintList(complaints);
+            if (document.getElementById('analytics-card')) updateAnalytics(complaints);
+            setTimeout(attachTiltEffects, 100); 
+        };
+        
         // --- Constants ---
-        const COMPLAINTS_COLLECTION_PATH = `artifacts/${appId}/public/data/complaints`;
+        const COMPLAINTS_COLLECTION_PATH = 'in_memory_complaints';
         const GEMINI_API_KEY = "";
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
         const ROLE_COLORS = {
@@ -254,7 +273,6 @@
 
         /** Generates a SHA256 hash for Blockchain Simulation. */
         const createHash = (data) => {
-            // Use Crypto-JS imported above
             return CryptoJS.SHA256(JSON.stringify(data)).toString(CryptoJS.enc.Hex);
         };
         
@@ -311,123 +329,57 @@
         // --- Core Application Logic (Auth and Init) ---
         
         window.onload = async () => {
-            if (!firebaseConfig) {
-                renderAuthUI('System Error: Firebase config missing.', 'red');
-                return;
-            }
+            // Mock Firebase init for structure
+            app = firebase.initializeApp(firebaseConfig);
+            auth = firebase.getAuth(app);
+            db = firebase.getFirestore(app);
 
-            try {
-                app = firebase.initializeApp(firebaseConfig);
-                auth = firebase.getAuth(app);
-                db = firebase.getFirestore(app);
-
-                // Initial Sign-in attempt (required for Firestore access)
-                if (initialAuthToken) {
-                    await withRetry(firebase.signInWithCustomToken)(auth, initialAuthToken);
+            // Mock auth state change immediately
+            firebase.onAuthStateChanged(auth, (user) => {
+                let currentRole = localStorage.getItem('eBlotter_role');
+                if (!currentRole) {
+                    renderAuthUI();
                 } else {
-                    await withRetry(firebase.signInAnonymously)(auth);
+                    userRole = currentRole;
+                    userId = currentRole.toLowerCase() + '-user-id';
+                    renderApp(userRole);
+                    updateInMemoryData(); // Initial data load
                 }
-
-                // Authentication state listener
-                firebase.onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        // Mock role assignment logic (Can be stored/retrieved from Firestore user profile in a real app)
-                        userRole = 'Resident'; 
-                        if (userId.length > 30) userRole = 'Admin'; 
-                        
-                        const storedRole = localStorage.getItem('eBlotter_role');
-                        if (storedRole) userRole = storedRole;
-
-                        renderApp(userRole);
-                        setupListeners();
-                    } else {
-                        userId = null;
-                        userRole = 'Guest';
-                        renderAuthUI();
-                    }
-                });
-
-            } catch (error) {
-                console.error('Firebase Initialization Error:', error);
-                renderAuthUI(`Error: ${error.message}`, 'red');
-            }
+            });
         };
         
         /** Log out function */
         const handleLogout = async () => {
-            if (!auth) {
-                 console.error('Auth instance not available for logout.');
-                 return;
-            }
             document.getElementById('main-content').innerHTML = `
                 <div class="dot-pulse"><div></div><div></div><div></div></div>
                 <p class="text-gray-400 mt-4">Initiating Logout Protocol...</p>`;
-            try {
-                await withRetry(firebase.signOut)(auth);
-                localStorage.removeItem('eBlotter_role');
-            } catch (error) {
-                showModal('Logout Failed', `<p class="text-red-400">Error: ${error.message}</p>`);
-                renderAuthUI();
-            }
+            
+            // Simulate Firebase logout
+            localStorage.removeItem('eBlotter_role');
+            userRole = 'Guest';
+            userId = null;
+            
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulating network delay
+            renderAuthUI();
         };
         
         /** Simulated Login for Role Switching Demo */
         const simulateLogin = async (role) => {
-            if (!auth) {
-                 showModal('Login Failed', '<p class="text-red-400">Error: Authentication system is not ready.</p>');
-                 return;
-            }
-            
             document.getElementById('main-content').innerHTML = `
                 <div class="dot-pulse"><div></div><div></div><div></div></div>
                 <p class="text-gray-400 mt-4">Establishing connection for ${role}...</p>`;
-            try {
-                // Safely sign out the current user if one exists. The original error was caused 
-                // by implicitly assuming `auth.currentUser` was not null or undefined inside 
-                // `handleLogout` but calling it here without checking `auth.currentUser` status. 
-                // Here we safely check if a user is currently logged in before attempting signOut.
-                if (auth.currentUser) {
-                    await withRetry(firebase.signOut)(auth);
-                }
-                
-                await withRetry(firebase.signInAnonymously)(auth);
-                localStorage.setItem('eBlotter_role', role);
-            } catch (error) {
-                // The Login Failed error was coming from auth.currentUser inside the try block 
-                // in the original file, which is now fixed by checking auth.currentUser first.
-                // If it fails here, it's a genuine Firebase connection/sign-in issue.
-                showModal('Login Failed', `<p class="text-red-400">Error: ${error.message}</p>`);
-                renderAuthUI();
-            }
+            
+            localStorage.setItem('eBlotter_role', role);
+            userRole = role;
+            userId = role.toLowerCase() + '-user-id';
+            
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulating network delay
+            renderApp(userRole);
+            updateInMemoryData();
         };
+        window.simulateLogin = simulateLogin; // Expose globally for HTML onclick
 
-        // --- Complaint CRUD Functions ---
-
-        let complaints = [];
-
-        /** Fetches and listens to real-time complaint data. */
-        const setupListeners = () => {
-            if (!db || !userId) return;
-            const q = firebase.query(firebase.collection(db, COMPLAINTS_COLLECTION_PATH));
-
-            firebase.onSnapshot(q, (snapshot) => {
-                const updatedComplaints = [];
-                snapshot.forEach((doc) => {
-                    updatedComplaints.push({ id: doc.id, ...doc.data() });
-                });
-                complaints = updatedComplaints;
-                
-                // Re-render components
-                if (document.getElementById('complaint-list')) renderComplaintList(complaints);
-                if (document.getElementById('analytics-card')) updateAnalytics(complaints);
-                
-                // Attach 5D effects after content is rendered
-                setTimeout(attachTiltEffects, 100); 
-            }, (error) => {
-                console.error("Error fetching complaints:", error);
-            });
-        };
+        // --- Complaint CRUD Functions (In-Memory Implementation) ---
 
         /** Adds a new complaint (Resident) */
         const addComplaint = async () => {
@@ -440,15 +392,16 @@
                 return;
             }
 
+            const newId = (complaints.length + 1).toString();
             const caseId = 'C-' + Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5).toUpperCase();
             
             const newComplaint = {
+                id: newId,
                 caseId, type, location, narrative,
                 complainantId: userId,
                 complainantRole: userRole,
                 status: 'Pending Review',
                 dateFiled: new Date().toISOString(),
-                // Placeholder for evidence URL (simulated)
                 evidenceUrl: `https://placehold.co/200x150/0f172a/fff?text=Evidence+${caseId}`, 
             };
             
@@ -456,7 +409,7 @@
             const aiResult = simulateAIPrediction(newComplaint.narrative);
             newComplaint.aiPrediction = aiResult.prediction;
             newComplaint.aiXai = aiResult.xai;
-            newComplaint.status = aiResult.prediction.includes('Priority') ? 'Urgent' : 'Pending Review';
+            newComplaint.status = aiResult.prediction.includes('Priority') || aiResult.prediction.includes('Critical') ? 'Urgent' : 'Pending Review';
 
             // 5. Blockchain Audit Trail Simulation (Initial Block)
             const blockData = { ...newComplaint, timestamp: Date.now() };
@@ -465,20 +418,25 @@
             newComplaint.blockchainHash = blockHash;
             newComplaint.auditLog = [{
                 action: 'FILED',
-                timestamp: firebase.serverTimestamp(),
+                timestamp: new Date(),
                 hash: blockHash
             }];
             
             try {
-                await withRetry(firebase.addDoc)(firebase.collection(db, COMPLAINTS_COLLECTION_PATH), newComplaint);
+                // In-Memory Storage
+                complaints.push(newComplaint);
+                updateInMemoryData();
+                
                 showModal('Success: Complaint Filed', `<p class="text-green-400 text-lg">Your report has been securely filed.</p><p>Case ID: <strong>${caseId}</strong>. Blockchain Verified ✅</p>`);
                 document.getElementById('new-type').value = '';
                 document.getElementById('new-location').value = '';
                 document.getElementById('new-narrative').value = '';
             } catch (error) {
+                // This shouldn't happen in demo mode, but good practice
                 showModal('Error', `<p class="text-red-400">Failed to file complaint: ${error.message}</p>`);
             }
         };
+        window.addComplaint = addComplaint; // Expose globally
 
         /** Updates an existing complaint (Admin/Staff only) */
         window.updateComplaintStatus = async (id, newStatus) => {
@@ -489,29 +447,33 @@
                 return;
             }
 
-            const complaintRef = firebase.doc(db, COMPLAINTS_COLLECTION_PATH, id);
+            const complaint = complaints.find(c => c.id === id);
+            if (!complaint) return;
             
-            const updates = { status: newStatus };
-            
+            complaint.status = newStatus;
+
             // Blockchain audit log update
-            const blockData = { id, updates, timestamp: Date.now() };
+            const blockData = { id, updates: { status: newStatus }, timestamp: Date.now() };
             const blockHash = createHash(blockData);
 
             const auditLogEntry = {
                 action: 'STATUS_UPDATE',
                 details: `Status changed to ${newStatus}`,
-                timestamp: firebase.serverTimestamp(),
+                timestamp: new Date(),
                 hash: blockHash,
                 updatedBy: userId,
             };
 
+            // Ensure auditLog is an array before pushing
+            if (!Array.isArray(complaint.auditLog)) {
+                complaint.auditLog = [];
+            }
+            complaint.auditLog.push(auditLogEntry);
+            complaint.blockchainHash = blockHash; // Update hash for the latest state
+
             try {
-                await withRetry(firebase.updateDoc)(complaintRef, {
-                    ...updates,
-                    blockchainHash: blockHash, // New block hash for the latest state
-                    auditLog: firebase.arrayUnion(auditLogEntry)
-                });
-                showModal('Success', `<p class="text-green-400">Case ${id} status updated to <strong>${newStatus}</strong> and verified on Blockchain ✅.</p>`);
+                updateInMemoryData();
+                showModal('Success', `<p class="text-green-400">Case ${complaint.caseId} status updated to <strong>${newStatus}</strong> and verified on Blockchain ✅.</p>`);
             } catch (error) {
                 showModal('Error', `<p class="text-red-400">Failed to update complaint: ${error.message}</p>`);
             }
@@ -538,11 +500,12 @@
 
         window.performDeletion = async (id) => {
             closeModal();
-            const complaintRef = firebase.doc(db, COMPLAINTS_COLLECTION_PATH, id);
             try {
-                // Log the deletion to a separate audit collection if this were a real blockchain (simulating here)
-                // In this case, just delete the document. The Firestore listener handles the UI removal.
-                await withRetry(firebase.deleteDoc)(complaintRef);
+                const index = complaints.findIndex(c => c.id === id);
+                if (index > -1) {
+                    complaints.splice(index, 1);
+                }
+                updateInMemoryData();
                 showModal('Deletion Success', `<p class="text-green-400">Case ${id} successfully purged from the active matrix. Audit logged.</p>`);
             } catch (error) {
                 showModal('Error', `<p class="text-red-400">Failed to delete complaint: ${error.message}</p>`);
@@ -605,6 +568,8 @@
                 </div>
             `;
 
+            let totalComplaintsCount = complaints.length;
+
             let mainContentHTML = `
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
                     <!-- Analytics & Insights (Section 6 & 7) -->
@@ -637,7 +602,7 @@
                     <div class="lg:col-span-1 space-y-8">
                         ${renderComplaintForm(role)}
                         <div id="complaint-list-container" class="p-6 card-5d card-5d-tilt rounded-xl">
-                            <h2 class="text-2xl font-bold neon-text mb-4">Incident Log (Live)</h2>
+                            <h2 class="text-2xl font-bold neon-text mb-4">Incident Log (Live) <span class="text-lg text-gray-400">(${totalComplaintsCount})</span></h2>
                             <div id="complaint-list" class="space-y-4 max-h-[400px] overflow-y-auto">
                                 <!-- List rendered by renderComplaintList() -->
                             </div>
@@ -647,7 +612,7 @@
             `;
             
             document.getElementById('main-content').innerHTML = mainContentHTML;
-            // The initial listener call will populate the data and attach the tilt effects
+            // The initial data load happens after renderApp finishes
         };
 
         const renderComplaintForm = (role) => {
@@ -670,7 +635,7 @@
                 return `
                     <div class="p-6 card-5d card-5d-tilt rounded-xl bg-blue-900/50 border-blue-500/50">
                         <h2 class="text-2xl font-bold neon-text mb-4">Case Management Status</h2>
-                        <p class="text-gray-300 mb-4">As ${role}, all complaints are accessible in the live log below for review and action.</p>
+                        <p class="text-gray-300 mb-4">As ${role}, all complaints are accessible in the live log below for review and action. There are <strong class="text-cyan-400">${complaints.length}</strong> active cases.</p>
                         <button onclick="showModal('Staff Portal', '<h2>Staff/Admin Interface</h2><p>This panel provides full access to the complaint log for status updates and auditing.</p>')" class="w-full py-3 bg-blue-700 hover:bg-blue-600 rounded-lg text-white font-bold transition-all transform hover:scale-[1.02] shadow-md shadow-blue-700/40">
                             Open Management Tools
                         </button>
@@ -708,6 +673,9 @@
                     `;
                 }).join('')}
             `;
+            // Update the count in the header if available
+            const totalCountEl = listContainer.closest('#complaint-list-container')?.querySelector('h2 > span');
+            if (totalCountEl) totalCountEl.innerText = `(${list.length})`;
         };
         
         // Detailed View Modal
@@ -720,7 +688,7 @@
             
             // Build Audit Log Display
             const auditLogHtml = complaint.auditLog.map(log => {
-                const logDate = log.timestamp && log.timestamp.toDate ? log.timestamp.toDate().toLocaleString() : 'N/A';
+                const logDate = log.timestamp && log.timestamp.toLocaleString ? log.timestamp.toLocaleString() : 'N/A';
                 const actionColor = log.action.includes('FILED') ? 'text-green-400' : log.action.includes('UPDATE') ? 'text-yellow-400' : 'text-red-400';
                 return `
                     <div class="flex text-xs space-x-2 border-b border-slate-700 pb-1">
@@ -780,6 +748,7 @@
 
             showModal(`Case File: ${complaint.caseId}`, content, actions);
         };
+        window.viewComplaintDetails = viewComplaintDetails;
         
         window.showStatusUpdateModal = (id) => {
              const complaint = complaints.find(c => c.id === id);
