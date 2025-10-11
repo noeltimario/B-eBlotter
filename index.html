@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter</title>
+    <title>Barangay eBlotter)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDKs (Included but bypassed for data access in demo mode) -->
@@ -13,7 +13,7 @@
             initializeApp: () => ({ name: 'demo-app' }),
             getAuth: () => ({ currentUser: { uid: 'guest-demo-123' } }),
             signInAnonymously: () => Promise.resolve({ user: { uid: 'guest-demo-123' } }),
-            signInWithCustomToken: (auth, token) => Promise.resolve({ user: { uid: token.substring(0, 8) + '-user' } }),
+            signInWithCustomToken: (auth, token) => Promise.resolve({ user: { uid: token.substring(0, 0) + '-user' } }),
             signOut: () => Promise.resolve(),
             onAuthStateChanged: (auth, callback) => {
                 // In demo mode, simulate immediate login
@@ -245,7 +245,8 @@
         
         // --- Constants ---
         const COMPLAINTS_COLLECTION_PATH = 'in_memory_complaints';
-        const GEMINI_API_KEY = "";
+        // IMPORTANT: For the AI Chatbot (Section 4) to work, you must provide a valid Gemini API Key here.
+        const GEMINI_API_KEY = ""; 
         const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
         const ROLE_COLORS = {
             'Admin': 'cyan',
@@ -880,6 +881,13 @@
                 appendMessage(message, 'user');
                 inputField.value = '';
                 
+                // Immediate check for API key
+                if (!GEMINI_API_KEY) {
+                    appendMessage("The Barangay AI is currently offline. Please add your Gemini API Key in the code to activate the service.", 'ai-error');
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    return;
+                }
+
                 const thinkingMessage = appendMessage('', 'ai-thinking');
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
@@ -899,7 +907,14 @@
                     console.error('Gemini API Error:', error); // Log the full error for debugging
                     thinkingMessage.classList.remove('ai-thinking');
                     thinkingMessage.classList.add('ai-error');
-                    thinkingMessage.innerHTML = `<span class="font-bold text-red-400 mr-2">AI Error:</span> Could not connect to the AI Matrix. Please check your connection or try again. (${error.message || 'Unknown Error'})`;
+                    
+                    let friendlyError = 'Hindi ako makakonekta sa AI Matrix. Pakitiyak na tama ang inyong API key at mayroon kayong koneksyon sa internet.'; 
+                    
+                    if (error.message.includes('403')) {
+                         friendlyError = 'AI Chatbot service failed. Please ensure your Gemini API Key is correctly placed in the code.';
+                    }
+                    
+                    thinkingMessage.innerHTML = `<span class="font-bold text-red-400 mr-2">AI Error:</span> ${friendlyError}`;
                 }
 
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -974,6 +989,12 @@
 
         /** Calls the Gemini API for Chatbot response */
         const getGeminiResponse = async (prompt) => {
+            
+            if (!GEMINI_API_KEY) {
+                // Throw specific error if key is missing, allowing the caller (sendMessage) to handle it gracefully
+                throw new Error('Missing API Key. Please add your key to the GEMINI_API_KEY variable.');
+            }
+
             const systemPrompt = `You are the Barangay eBlotter AI Chatbot, known as 'Barangay AI'. You are helpful, respectful, and designed to assist citizens in the Philippines. Respond in the language of the user (English, Tagalog, or Cebuano). 
             Your tasks:
             1. Handle complaint submission (confirm the main issue, location, and date).
@@ -1013,4 +1034,3 @@
     </script>
 </body>
 </html>
-
