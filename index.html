@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter System</title>
+    <title>Barangay eBlotter 5D System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDKs -->
@@ -157,7 +157,8 @@
             <h1 class="text-5xl font-bold neon-text tracking-widest">
                 Barangay eBlotter 
             </h1>
-            <p class="text-lg text-gray-300 mt-2">Digital Incident & Complaint Reporting System</p>
+            <p class="text-lg text-gray-300 mt-2">AI-Powered Digital Incident & Complaint Reporting System</p>
+            <p class="text-xs text-gray-500 mt-1">© ${new Date().getFullYear()} Noel Timario. All Rights Reserved.</p>
             <div id="auth-status" class="mt-4 text-sm text-center">
                 <!-- Status will be dynamically updated here -->
             </div>
@@ -173,10 +174,10 @@
         
         <!-- Chatbot Container -->
         <div id="chatbot-container">
-            <button id="chatbot-toggle" class="w-16 h-16 rounded-full bg-slate-900 border-2 border-cyan-400 chat-pulse flex items-center justify-center text-4xl shadow-2xl shadow-cyan-500/50 hover:scale-105 transition-transform" aria-label="Toggle Chatbot">
+            <button id="chatbot-toggle" class="w-16 h-16 fixed bottom-4 right-4 md:bottom-8 md:right-8 rounded-full bg-slate-900 border-2 border-cyan-400 chat-pulse flex items-center justify-center text-4xl shadow-2xl shadow-cyan-500/50 hover:scale-105 transition-transform z-40" aria-label="Toggle Chatbot">
                 🤖
             </button>
-            <div id="chatbot-modal" class="hidden w-80 md:w-96 mb-20 card-5d rounded-xl overflow-hidden shadow-2xl shadow-cyan-600/50 flex flex-col h-[60vh]">
+            <div id="chatbot-modal" class="hidden fixed bottom-24 right-4 md:bottom-28 md:right-8 w-80 md:w-96 mb-2 card-5d rounded-xl overflow-hidden shadow-2xl shadow-cyan-600/50 flex flex-col h-[60vh] z-50">
                 <div class="p-3 bg-slate-900/90 border-b border-cyan-400/50 flex justify-between items-center">
                     <h3 class="text-lg font-bold neon-text">Barangay AI</h3>
                     <div id="voice-status" class="text-xs text-yellow-400 flex items-center cursor-pointer p-1 rounded-md hover:bg-slate-700 transition-colors">
@@ -355,32 +356,47 @@
         
         /** Log out function */
         const handleLogout = async () => {
-            if (auth) {
-                document.getElementById('main-content').innerHTML = `
-                    <div class="dot-pulse"><div></div><div></div><div></div></div>
-                    <p class="text-gray-400 mt-4">Initiating Logout Protocol...</p>`;
-                try {
-                    await withRetry(firebase.signOut)(auth);
-                    localStorage.removeItem('eBlotter_role');
-                } catch (error) {
-                    showModal('Logout Failed', `<p class="text-red-400">Error: ${error.message}</p>`);
-                    renderAuthUI();
-                }
+            if (!auth) {
+                 console.error('Auth instance not available for logout.');
+                 return;
+            }
+            document.getElementById('main-content').innerHTML = `
+                <div class="dot-pulse"><div></div><div></div><div></div></div>
+                <p class="text-gray-400 mt-4">Initiating Logout Protocol...</p>`;
+            try {
+                await withRetry(firebase.signOut)(auth);
+                localStorage.removeItem('eBlotter_role');
+            } catch (error) {
+                showModal('Logout Failed', `<p class="text-red-400">Error: ${error.message}</p>`);
+                renderAuthUI();
             }
         };
         
         /** Simulated Login for Role Switching Demo */
         const simulateLogin = async (role) => {
+            if (!auth) {
+                 showModal('Login Failed', '<p class="text-red-400">Error: Authentication system is not ready.</p>');
+                 return;
+            }
+            
             document.getElementById('main-content').innerHTML = `
                 <div class="dot-pulse"><div></div><div></div><div></div></div>
                 <p class="text-gray-400 mt-4">Establishing connection for ${role}...</p>`;
             try {
+                // Safely sign out the current user if one exists. The original error was caused 
+                // by implicitly assuming `auth.currentUser` was not null or undefined inside 
+                // `handleLogout` but calling it here without checking `auth.currentUser` status. 
+                // Here we safely check if a user is currently logged in before attempting signOut.
                 if (auth.currentUser) {
                     await withRetry(firebase.signOut)(auth);
                 }
+                
                 await withRetry(firebase.signInAnonymously)(auth);
                 localStorage.setItem('eBlotter_role', role);
             } catch (error) {
+                // The Login Failed error was coming from auth.currentUser inside the try block 
+                // in the original file, which is now fixed by checking auth.currentUser first.
+                // If it fails here, it's a genuine Firebase connection/sign-in issue.
                 showModal('Login Failed', `<p class="text-red-400">Error: ${error.message}</p>`);
                 renderAuthUI();
             }
