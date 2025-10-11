@@ -496,17 +496,25 @@
         };
 
         window.setRole = async (role) => {
+            // Check if DB and user ID are ready before attempting Firestore write
+            if (!window.db || !window.USER_ID) {
+                console.error("Database or User ID is not initialized. Cannot set role.");
+                window.showTemporaryMessage("SYSTEM ERROR: Core not initialized. Try refreshing.", 'error');
+                return;
+            }
+            
             // Path: /artifacts/{appId}/users/{userId}/config/profile
             const profileRef = doc(window.db, `artifacts/${appId}/users/${window.USER_ID}/config`, 'profile');
             try {
+                // Attempt to write the user's chosen role to their private profile configuration.
                 await setDoc(profileRef, { role: role, userId: window.USER_ID });
                 window.USER_ROLE = role;
                 document.getElementById('role-select-screen').classList.add('hidden');
                 setupApplication();
             } catch (error) {
-                // This is the repeated "Error setting user role" failure log
-                console.error("Error setting user role:", error);
-                window.showTemporaryMessage("SYSTEM ERROR: Could not set user role due to permission issues.", 'error');
+                // IMPORTANT: This error is the 'Missing or insufficient permissions' which indicates a security rule denial.
+                console.error("Error setting user role (FATAL PERMISSION ISSUE):", error);
+                window.showTemporaryMessage("ACCESS DENIED: Role write failed. Please ensure Firebase Security Rules allow writing to your private profile path.", 'error', 8000);
             }
         };
 
