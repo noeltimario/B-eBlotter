@@ -3,131 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter Business Roadmap</title>
+    <title>Detailed Capstone Project Gantt Chart (Barangay eBlotter System - COMPLETE)</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Excel Style Overrides */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f7f7; /* Very light gray background */
+            background-color: #f0f0f0; 
         }
-        .roadmap-container {
-            /* Mimics the clean paper-like container */
-            max-width: 900px;
-            margin: 2rem auto;
-            background-color: white;
-            padding: 2rem;
-            border: 1px solid #e5e7eb; /* Light border */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        .gantt-container {
+            overflow-x: auto;
+            max-width: 100%;
         }
-        .timeline-item {
+        .gantt-grid {
+            min-width: 1000px; /* Adjusted width for 4 months */
             position: relative;
-            padding-bottom: 2rem;
-            padding-left: 2rem;
+            border: 1px solid #999; 
+            background-color: #fff;
+            border-collapse: collapse;
         }
-        .timeline-item:not(:last-child)::before {
-            content: '';
+        .task-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ccc; 
+        }
+        /* Excel Header Styling */
+        .excel-header {
+            background-color: #e6e6e6; 
+            font-weight: 700;
+            color: #333;
+            border-right: 1px solid #999; 
+            padding: 8px 10px;
+            font-size: 0.875rem;
+            border-bottom: 2px solid #999; 
+        }
+        .phase-header {
+            background-color: #c9e0f6; /* Light Blue for Phase Headers */
+            font-weight: 700;
+            color: #1e3a8a;
+            font-size: 0.9rem;
+        }
+        .task-info {
+            flex-shrink: 0;
+            width: 300px; /* Wider for detailed task names */
+            padding: 5px 10px;
+            font-size: 0.875rem;
+            background-color: #fff;
+            z-index: 2;
+            border-right: 1px solid #ccc;
+        }
+        .role-info {
+            flex-shrink: 0;
+            width: 120px; 
+            padding: 5px 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #1e3a8a;
+            background-color: #f5f5f5; 
+            z-index: 2;
+            border-right: 1px solid #ccc;
+        }
+        .task-bar-area {
+            flex-grow: 1;
+            /* 4 months: August (partial), September, October, November (partial) */
+            grid-template-columns: repeat(4, minmax(140px, 1fr)); 
+            display: grid;
+            gap: 0; 
+            padding: 5px 0;
+            min-width: 560px; /* 4 * 140px */
+            position: relative;
+            border-left: 1px solid #999; 
+        }
+        .month-header {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 6px 0;
+            color: #333;
+            background-color: #dcdcdc; 
+            border-right: 1px solid #999; 
+        }
+        .time-cell {
+            height: 25px; /* Slightly shorter row height */
+            position: relative;
+            border-right: 1px solid #eee; 
+        }
+        .task-bar {
+            position: absolute;
+            height: 80%; 
+            top: 10%;
+            border-radius: 2px; 
+            box-shadow: none; 
+            transition: all 0.2s;
+            cursor: help;
+            border: 1px solid rgba(0,0,0,0.1); 
+            background-color: #5cb85c; /* Default Green for visibility */
+        }
+        /* Color classes - Flat, standard chart colors */
+        .bar-complete { background-color: #5cb85c; } /* Solid Green */
+        .bar-future { background-color: #a0a0a0; } /* Solid Medium Grey */
+        
+        /* Today Line */
+        #today-line {
             position: absolute;
             top: 0;
-            left: 0.5rem;
-            width: 2px;
+            left: 0; 
+            width: 2px; 
             height: 100%;
-            background-color: black;
-        }
-        .timeline-bullet {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 1rem;
-            height: 1rem;
-            background-color: white;
-            border: 2px solid black;
-            border-radius: 50%;
+            background-color: #d9534f; /* Solid Red */
             z-index: 10;
+            pointer-events: none;
+            box-shadow: none;
+            border-radius: 0;
         }
     </style>
 </head>
-<body>
+<body class="p-4 sm:p-8">
 
-    <div class="roadmap-container rounded-lg">
-        <h1 class="text-3xl font-extrabold text-center mb-1 text-black">BUSINESS ROADMAP</h1>
-        <h2 class="text-xl font-bold text-center mb-10 text-black">Barangay eBlotter System</h2>
+    <div class="max-w-7xl mx-auto bg-white shadow-none p-6 sm:p-10 border border-gray-400">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Barangay eBlotter System Gantt Chart (Project Complete)</h1>
+        <p class="text-green-600 font-semibold mb-6 text-sm bg-green-50 p-2 rounded-lg border border-green-200">
+            **Project Completion Achieved!** Timeline: **August 23 – November 13, 2025**. Today's Date: **November 13, 2025**.
+        </p>
 
-        <!-- Roadmap Content Area -->
-        <div class="space-y-6">
-
-            <!-- Phase 1 -->
-            <div class="timeline-item">
-                <div class="timeline-bullet"></div>
-                <div class="pl-4">
-                    <h3 class="text-lg font-bold text-black mb-1">1. RESEARCH & REQUIREMENTS ASSESSMENT</h3>
-                    <p class="text-sm font-semibold mb-2 text-black/70">EARLY 2025</p>
-                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
-                        <li>Conduct detailed surveys and interviews with officials and residents.</li>
-                        <li>Analyze current manual processes and legal compliance needs (Data Privacy, Katarungang Pambarangay).</li>
-                        <li>Define the initial minimum viable product (MVP) scope.</li>
-                    </ul>
+        <div class="gantt-container">
+            <div id="gantt-chart" class="gantt-grid">
+                
+                <!-- Headers -->
+                <div class="flex task-row sticky top-0 z-20">
+                    <div class="excel-header w-[300px] text-left">Task ID / Task Name</div>
+                    <div class="excel-header w-[120px] text-left">Task Lead(s)</div>
+                    <div class="task-bar-area grid grid-cols-4 border-l-0">
+                        <div class="month-header">August 2025 (Partial)</div>
+                        <div class="month-header">September 2025</div>
+                        <div class="month-header">October 2025</div>
+                        <div class="month-header border-r-0">November 2025 (Partial)</div>
+                    </div>
                 </div>
+                
+                <!-- Tasks will be added here by JavaScript -->
             </div>
-
-            <!-- Phase 2 -->
-            <div class="timeline-item">
-                <div class="timeline-bullet"></div>
-                <div class="pl-4">
-                    <h3 class="text-lg font-bold text-black mb-1">2. SOLUTION CONCEPTUALIZATION & DESIGN</h3>
-                    <p class="text-sm font-semibold mb-2 text-black/70">MID 2025</p>
-                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
-                        <li>Define key features (e.g., instant reporting, role-based dashboards, AI analytics engine).</li>
-                        <li>Design System Architecture and UI/UX for mobile-first compatibility.</li>
-                        <li>Establish data security and encryption protocols.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Phase 3 -->
-            <div class="timeline-item">
-                <div class="timeline-bullet"></div>
-                <div class="pl-4">
-                    <h3 class="text-lg font-bold text-black mb-1">3. DEVELOPMENT & PROTOTYPE TESTING</h3>
-                    <p class="text-sm font-semibold mb-2 text-black/70">LATE 2025</p>
-                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
-                        <li>Build the initial version of the system (MVP).</li>
-                        <li>Conduct rigorous Alpha and Beta testing with staff and core residents.</li>
-                        <li>Refine and debug the system based on usability and performance metrics.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Phase 4 -->
-            <div class="timeline-item">
-                <div class="timeline-bullet"></div>
-                <div class="pl-4">
-                    <h3 class="text-lg font-bold text-black mb-1">4. OPTIMIZATION & STAFF TRAINING</h3>
-                    <p class="text-sm font-semibold mb-2 text-black/70">EARLY 2026</p>
-                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
-                        <li>Refine system features and optimize database performance.</li>
-                        <li>Conduct comprehensive training sessions for all Barangay staff and Lupong Tagapamayapa.</li>
-                        <li>Formalize system adoption protocols with the Barangay Council.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Phase 5 (Last item, no bottom line) -->
-            <div class="timeline-item !pb-0">
-                <div class="timeline-bullet"></div>
-                <div class="pl-4">
-                    <h3 class="text-lg font-bold text-black mb-1">5. LAUNCH & EXPANSION</h3>
-                    <p class="text-sm font-semibold mb-2 text-black/70">MID 2026</p>
-                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
-                        <li>Publicly launch the Barangay eBlotter System and commence official operation.</li>
-                        <li>Begin monitoring long-term system performance and adoption rate.</li>
-                        <li>Plan for Phase 2 integration with external Local Government Unit (LGU) databases.</li>
-                    </ul>
-                </div>
-            </div>
-
         </div>
-        
+
+        <div class="mt-8 p-4 bg-gray-100 rounded-sm border border-gray-300">
+            <h3 class="text-md font-semibold mb-2 text-gray-700">Status Legend</h3>
+            <div class="flex flex-wrap gap-6 text-sm text-gray-600">
+                <div class="flex items-center"><span class="w-4 h-3 rounded-sm bar-complete mr-2 border"></span> **Complete** (All Tasks Finished)</div>
+                <div class="flex items-center"><div class="w-4 h-3 mr-2 bg-red-600"></div> **Current Date** (Nov 13, 2025 - Project End)</div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // --- Configuration Dates (Updated for Project Completion on Nov 13) ---
+        const TODAY = new Date('2025-11-13T00:00:00'); // Setting today to the final day of the project
+        const START_DATE = new Date('2025-08-23T00:00:00'); 
+        const END_DATE = new Date('2025-11-13T00:00:00');   
+        const MS_PER_DAY = 1000 * 3600 * 24;
+
+        // Calculate total days in the visualization period (83 days)
+        const totalDurationDays = (END_DATE.getTime() - START_DATE.getTime()) / MS_PER_DAY + 1;
+
+        // Helper function to create Date objects from 'YYYY-MM-DD' strings
+        const date = (str) => new Date(str + 'T00:00:00'); 
+        
+        // --- Gantt Chart Data: Specific to Web-Based Barangay eBlotter System ---
+        const rawTasks = [
+            { id: 'PROJECT', name: 'Barangay eBlotter System (Web)', isPhase: true },
+            
+            // Phase 2: Design 
+            { id: '2', name: 'System Analysis & Design for eBlotter', isPhase: true },
+            { id: '2.3', name: 'Web UI/UX Prototyping (Dashboard, Blotter Entry, Reports)', start: date('2025-08-23'), end: date('2025-08-29'), roles: 'Alcoseba' },
+            { id: '2.4', name: 'Architectural Design (Selecting Web Tech Stack & Server Architecture)', start: date('2025-08-23'), end: date('2025-08-30'), roles: 'Garin' },
+            
+            // Phase 3: Development & Implementation 
+            { id: '3', name: 'Development & Implementation (Web)', isPhase: true },
+            { id: '3.1', name: 'Server-side & Database Integration (Blotter Record Mgmt)', start: date('2025-09-01'), end: date('2025-09-20'), roles: 'Garin' },
+            { id: '3.3', name: 'Front-end Development (Web Interface & User Authentication)', start: date('2025-09-01'), end: date('2025-10-10'), roles: 'Garin/Alcoseba' },
+            { id: '3.4', name: 'Module Integration (Connecting UI, API, and Database)', start: date('2025-10-20'), end: date('2025-10-31'), roles: 'Garin' },
+            
+            // Phase 4: Testing & Quality Assurance 
+            { id: '4', name: 'Testing & Quality Assurance', isPhase: true },
+            { id: '4.1', name: 'Unit Testing (Functions for saving/retrieving Blotter data)', start: date('2025-11-01'), end: date('2025-11-03'), roles: 'Garin' },
+            { id: '4.2', name: 'Integration Testing (API to Web Interface Functionality)', start: date('2025-11-04'), end: date('2025-11-06'), roles: 'Timario' },
+            { id: '4.3', name: 'Alpha Testing (Internal Barangay Staff Review)', start: date('2025-11-07'), end: date('2025-11-10'), roles: 'Garin/Alcoseba' },
+            // This final task is now marked complete as of Nov 13.
+            { id: '4.4', name: 'Accepting Testing (User Feedback & Final Web Deployment)', start: date('2025-11-11'), end: date('2025-11-13'), roles: 'Timario' },
+        ];
+
+        // Format dates for display
+        const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+        function getTaskStatus(task) {
+            if (task.isPhase) return 'phase';
+            
+            // Task is completed if its end date is on or before today (Nov 13)
+            if (task.end.getTime() <= TODAY.getTime()) {
+                return 'complete';
+            }
+            // If we are on Nov 13, there should be no future tasks.
+            return 'future';
+        }
+
+        function getTaskBarClass(status) {
+            // Since all tasks are complete, we only need the complete class
+            return 'bar-complete'; 
+        }
+
+        function renderGanttChart() {
+            const chartDiv = document.getElementById('gantt-chart');
+            
+            // Remove previous tasks (keep header)
+            const taskHeader = chartDiv.querySelector('.task-row');
+            while (taskHeader.nextSibling) {
+                taskHeader.nextSibling.remove();
+            }
+            
+            rawTasks.forEach(task => {
+                const status = getTaskStatus(task);
+
+                // 1. Create the Task Row container
+                const row = document.createElement('div');
+                row.className = `task-row ${task.isPhase ? 'phase-header' : 'hover:bg-gray-50'}`;
+                
+                // 2. Create the Task Info column (ID & Name)
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'task-info ' + (task.isPhase ? 'phase-header' : 'text-gray-800 font-normal');
+                infoDiv.textContent = `${task.id}. ${task.name}`;
+                
+                // Add dates for non-phase rows
+                if (!task.isPhase) {
+                    infoDiv.innerHTML += `
+                        <div class="text-xs text-gray-500 font-normal mt-0.5">
+                            ${formatDate(task.start)} - ${formatDate(task.end)}
+                        </div>
+                    `;
+                }
+
+
+                // 3. Create the Role Info column
+                const roleDiv = document.createElement('div');
+                roleDiv.className = 'role-info ' + (task.isPhase ? 'phase-header' : 'text-xs');
+                roleDiv.textContent = task.roles || '';
+                
+                // 4. Create the Task Bar Area (Grid)
+                const barArea = document.createElement('div');
+                barArea.className = 'task-bar-area border-l border-r-0 border-gray-400';
+                
+                // Add empty cells for visualization alignment (4 months)
+                for (let i = 1; i <= 4; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'time-cell';
+                    barArea.appendChild(cell);
+                }
+
+                // 5. Calculate and create the Task Bar visualization
+                if (!task.isPhase) {
+                    const bar = document.createElement('div');
+                    bar.className = 'task-bar ' + getTaskBarClass(status);
+                    
+                    const startOffsetDays = (task.start.getTime() - START_DATE.getTime()) / MS_PER_DAY;
+                    const durationDays = (task.end.getTime() - task.start.getTime()) / MS_PER_DAY + 1;
+
+                    const startPosition = (startOffsetDays / totalDurationDays) * 100;
+                    const barWidth = (durationDays / totalDurationDays) * 100;
+
+                    bar.style.left = `${startPosition}%`;
+                    bar.style.width = `${barWidth}%`;
+                    
+                    bar.title = `${task.id}. ${task.name} \nLead: ${task.roles} \nStatus: ${status.toUpperCase()} \n Start: ${formatDate(task.start)} \n End: ${formatDate(task.end)}`;
+
+                    barArea.appendChild(bar);
+                }
+
+                // 6. Assemble the row
+                row.appendChild(infoDiv);
+                row.appendChild(roleDiv); 
+                row.appendChild(barArea);
+                chartDiv.appendChild(row);
+            });
+
+            // 7. Add the "Today" line
+            let todayLine = document.getElementById('today-line');
+            if (!todayLine) {
+                todayLine = document.createElement('div');
+                todayLine.id = 'today-line';
+                chartDiv.appendChild(todayLine);
+            }
+            
+            const timeDiff = TODAY.getTime() - START_DATE.getTime();
+            const daysPassed = timeDiff / MS_PER_DAY;
+            
+            let todayPosition = (daysPassed / totalDurationDays) * 100;
+            
+            if (todayPosition < 0) todayPosition = 0;
+            if (todayPosition > 100) todayPosition = 100;
+
+            const taskInfoWidth = document.querySelector('.task-info')?.offsetWidth || 300;
+            const roleInfoWidth = document.querySelector('.role-info')?.offsetWidth || 120;
+            const totalBarArea = document.querySelector('.task-bar-area');
+            
+            if (totalBarArea) {
+                const chartLeftOffset = taskInfoWidth + roleInfoWidth + (todayPosition / 100) * totalBarArea.offsetWidth;
+                todayLine.style.left = `${chartLeftOffset}px`;
+            }
+        }
+
+        window.addEventListener('resize', renderGanttChart);
+        document.addEventListener('DOMContentLoaded', renderGanttChart);
+    </script>
 </body>
 </html>
