@@ -3,294 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter System - Digital Incident Reporting</title>
-    <!-- Load Tailwind CSS -->
+    <title>Barangay eBlotter Business Roadmap</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8;
-            color: #1f2937;
+            background-color: #f7f7f7; /* Very light gray background */
         }
-        .container {
-            max-width: 1200px;
-        }
-        .hero-bg {
-            background-color: #1e3a8a; /* Dark Blue */
-            background-image: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); /* Blue Gradient */
-        }
-        .cta-button {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .cta-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.5), 0 4px 6px -2px rgba(59, 130, 246, 0.2);
-        }
-        .feature-card {
-            transition: box-shadow 0.3s, transform 0.3s;
-        }
-        .feature-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            transform: translateY(-5px);
-        }
-        
-        /* Workflow Specific Styles for Visual Consistency */
-        .workflow-step {
-            min-height: 80px;
-            width: 100%;
-            max-width: 450px;
-            margin: 0 auto;
+        .roadmap-container {
+            /* Mimics the clean paper-like container */
+            max-width: 900px;
+            margin: 2rem auto;
             background-color: white;
-            border: 2px solid #000;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            border: 1px solid #e5e7eb; /* Light border */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
-
-        .arrow {
-            width: 4px;
-            height: 30px;
-            background-color: #000;
-            margin: 0.5rem auto;
+        .timeline-item {
             position: relative;
+            padding-bottom: 2rem;
+            padding-left: 2rem;
         }
-
-        .arrow::after {
+        .timeline-item:not(:last-child)::before {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%) translateY(100%) rotate(45deg);
-            width: 10px;
-            height: 10px;
-            border-right: 4px solid #000;
-            border-bottom: 4px solid #000;
-            border-top: 0;
-            border-left: 0;
-            background-color: #f0f4f8; /* Match section background */
+            top: 0;
+            left: 0.5rem;
+            width: 2px;
+            height: 100%;
+            background-color: black;
         }
-
-        .workflow-container > .workflow-step:last-of-type + .arrow {
-            display: none;
+        .timeline-bullet {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1rem;
+            height: 1rem;
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 50%;
+            z-index: 10;
         }
     </style>
-    <!-- Lucide Icons (Inline SVGs) for visual appeal -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-blue': '#3b82f6',
-                        'secondary-dark': '#1e3a8a',
-                        'accent-yellow': '#facc15',
-                    }
-                }
-            }
-        }
-    </script>
 </head>
-<body class="antialiased">
+<body>
 
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-extrabold text-secondary-dark tracking-wide">eBlotter</h1>
-            <a href="#reporting" class="hidden sm:inline-block px-4 py-2 bg-primary-blue text-white text-sm font-semibold rounded-full shadow-lg hover:bg-blue-700 transition duration-300">
-                Start Report
-            </a>
-        </div>
-    </nav>
+    <div class="roadmap-container rounded-lg">
+        <h1 class="text-3xl font-extrabold text-center mb-1 text-black">BUSINESS ROADMAP</h1>
+        <h2 class="text-xl font-bold text-center mb-10 text-black">Barangay eBlotter System</h2>
 
-    <!-- Hero Section: Value Proposition & Call to Action -->
-    <section class="hero-bg py-20 md:py-32 text-white">
-        <div class="container mx-auto px-6 text-center">
-            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight">
-                Secure & Instant Incident Reporting
-            </h2>
-            <p class="text-xl sm:text-2xl mb-8 font-light max-w-3xl mx-auto opacity-90">
-                Report incidents and complaints to your Barangay 24/7. Achieve transparency and faster resolution—no paper needed.
-            </p>
-            <a id="reporting" href="#" class="cta-button inline-block bg-accent-yellow text-gray-900 font-bold text-lg px-10 py-4 rounded-full shadow-2xl uppercase tracking-wider">
-                File a Blotter Report Now
-            </a>
-            <p class="text-sm mt-4 opacity-80">
-                Data is protected under the Philippine Data Privacy Act of 2012.
-            </p>
-        </div>
-    </section>
+        <!-- Roadmap Content Area -->
+        <div class="space-y-6">
 
-    <!-- Features/Value Section -->
-    <section class="py-16 md:py-24 bg-white">
-        <div class="container mx-auto px-6">
-            <h3 class="text-3xl font-bold text-center mb-12 text-secondary-dark">Why Switch to eBlotter?</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <!-- Feature 1: Transparency -->
-                <div class="feature-card p-6 border border-gray-200 rounded-xl shadow-lg text-center">
-                    <svg class="w-12 h-12 text-primary-blue mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <h4 class="text-xl font-semibold mb-3">Full Transparency</h4>
-                    <p class="text-gray-600">Get **real-time status updates** via SMS or email directly to your phone. Track every step of your case's progress.</p>
-                </div>
-
-                <!-- Feature 2: Efficiency -->
-                <div class="feature-card p-6 border border-gray-200 rounded-xl shadow-lg text-center">
-                    <svg class="w-12 h-12 text-primary-blue mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M12 18v4"/><path d="M4.93 4.93l4.24 4.24"/><path d="M14.83 14.83l4.24 4.24"/><path d="M2 12h6"/><path d="M18 12h4"/><path d="M4.93 19.07l4.24-4.24"/><path d="M14.83 9.17l4.24-4.24"/></svg>
-                    <h4 class="text-xl font-semibold mb-3">Fast & Efficient</h4>
-                    <p class="text-gray-600">Say goodbye to paper delays. Automated report generation and streamlined submission processes save time for residents and staff.</p>
-                </div>
-
-                <!-- Feature 3: Data-Driven Governance -->
-                <div class="feature-card p-6 border border-gray-200 rounded-xl shadow-lg text-center">
-                    <svg class="w-12 h-12 text-primary-blue mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M7 10v10"/><path d="M17 4v16"/><path d="M2 12h20"/><path d="M10 4v16"/><path d="M14 10v10"/></svg>
-                    <h4 class="text-xl font-semibold mb-3">Proactive Governance</h4>
-                    <p class="text-gray-600">Barangay officials use **AI-driven insights** from blotter data to identify crime trends and allocate resources proactively.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Program Workflow Section -->
-    <section class="py-16 md:py-24 bg-f0f4f8">
-        <div class="container mx-auto px-6">
-            <h3 class="text-3xl font-bold text-center mb-12 text-secondary-dark">The System Journey: Program Workflow</h3>
-            
-            <!-- Workflow Chart Embedded -->
-            <div class="workflow-container mx-auto max-w-lg">
-    
-                <!-- 1. User Access & Onboarding -->
-                <div class="workflow-step">
-                    <p class="text-base font-semibold text-gray-800">1. User Access & Onboarding</p>
-                    <p class="text-sm text-gray-600">Access system via web/app; Account creation or anonymous login; Data privacy consent.</p>
-                </div>
-                <div class="arrow"></div>
-    
-                <!-- 2. Main Menu & Navigation -->
-                <div class="workflow-step">
-                    <p class="text-base font-semibold text-gray-800">2. Main Menu & Navigation</p>
-                    <p class="text-sm text-gray-600">Choose: File New Report, Check Status, Access Resources/FAQ, or Chatbot help.</p>
-                </div>
-                <div class="arrow"></div>
-    
-                <!-- 3. Report Submission Loop -->
-                <div class="workflow-step">
-                    <p class="text-base font-semibold text-gray-800">3. Incident Submission & Tracking</p>
-                    <p class="text-sm text-gray-600">Resident inputs details (guided by chatbot); System auto-assigns Case ID and sends notification.</p>
-                </div>
-                <div class="arrow"></div>
-    
-                <!-- 4. Staff Processing & Action -->
-                <div class="workflow-step">
-                    <p class="text-base font-semibold text-gray-800">4. Staff Processing & Action</p>
-                    <p class="text-sm text-gray-600">Barangay staff review dashboard; Classify report; Forward to Lupong Tagapamayapa or PNP.</p>
-                </div>
-                <div class="arrow"></div>
-    
-                <!-- 5. Status Updates & Resolution -->
-                <div class="workflow-step">
-                    <p class="text-base font-semibold text-gray-800">5. Real-Time Updates & Resolution</p>
-                    <p class="text-sm text-gray-600">System sends status changes (e.g., "Pending Mediation," "Resolved"); Final report archived.</p>
-                </div>
-                <div class="arrow"></div>
-    
-                <!-- 6. Data Collection & Analytics -->
-                <div class="workflow-step">
-                    <p class="text-base font-semibold text-gray-800">6. Data Collection & Analytics</p>
-                    <p class="text-sm text-gray-600">Secure storage of blotter data; System runs AI to identify crime trends and high-risk zones.</p>
-                </div>
-                <div class="arrow"></div>
-    
-                <!-- 7. Outcome Monitoring & Governance -->
-                <div class="workflow-step">
-                    <p class="text-base font-semibold text-gray-800">7. Outcome Monitoring & Governance</p>
-                    <p class="text-sm text-gray-600">Officials view Admin dashboard analytics; Generate automated compliance reports for LGUs.</p>
-                </div>
-                
-            </div>
-            <!-- End Workflow Chart -->
-            
-            <p class="text-center text-md font-medium text-gray-600 mt-6">
-                Figure: Program Workflow (Source: Project Documentation)
-            </p>
-        </div>
-    </section>
-
-    <!-- User Segments Section -->
-    <section class="py-16 md:py-24 bg-white">
-        <div class="container mx-auto px-6">
-            <h3 class="text-3xl font-bold text-center mb-12 text-secondary-dark">Designed for Our Community</h3>
-            
-            <div class="max-w-4xl mx-auto space-y-12">
-                
-                <!-- Resident Focus -->
-                <div class="flex flex-col md:flex-row items-center bg-gray-50 p-6 rounded-xl shadow-lg border-l-4 border-primary-blue">
-                    <div class="md:w-1/3 flex justify-center mb-4 md:mb-0">
-                        <svg class="w-16 h-16 text-accent-yellow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </div>
-                    <div class="md:w-2/3 md:pl-8 text-center md:text-left">
-                        <h4 class="text-2xl font-semibold text-gray-800 mb-2">For Barangay Residents</h4>
-                        <p class="text-gray-600">Access the system via our official **website or mobile app**. Use the **conversational chatbot** to quickly file a complaint or check the status of an existing case without leaving your home.</p>
-                    </div>
-                </div>
-
-                <!-- Official Focus -->
-                <div class="flex flex-col md:flex-row items-center bg-gray-50 p-6 rounded-xl shadow-lg border-l-4 border-primary-blue">
-                    <div class="md:w-1/3 flex justify-center mb-4 md:mb-0">
-                        <svg class="w-16 h-16 text-accent-yellow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m20 7-8-4-8 4"/><path d="m4 12 8 4 8-4"/><path d="m4 17 8 4 8-4"/><line x1="12" x2="12" y1="2" y2="22"/></svg>
-                    </div>
-                    <div class="md:w-2/3 md:pl-8 text-center md:text-left">
-                        <h4 class="text-2xl font-semibold text-gray-800 mb-2">For Officials and Lupong Tagapamayapa</h4>
-                        <p class="text-gray-600">Utilize **personalized case management dashboards** for streamlined processing. Generate compliance reports automatically and access training materials for system security and data analytics.</p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer / Channels & Partners -->
-    <footer class="bg-secondary-dark py-12 text-white">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                
-                <!-- Contact & Channels -->
-                <div>
-                    <h4 class="text-xl font-bold mb-4 border-b border-primary-blue pb-2">Connect & Access</h4>
-                    <p class="text-sm mb-3">Access the system through:</p>
-                    <ul class="space-y-2 text-sm">
-                        <li>Official Barangay Website/URL</li>
-                        <li>Mobile App (via App Stores)</li>
-                        <li>Information through Barangay Health Centers</li>
+            <!-- Phase 1 -->
+            <div class="timeline-item">
+                <div class="timeline-bullet"></div>
+                <div class="pl-4">
+                    <h3 class="text-lg font-bold text-black mb-1">1. RESEARCH & REQUIREMENTS ASSESSMENT</h3>
+                    <p class="text-sm font-semibold mb-2 text-black/70">EARLY 2025</p>
+                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
+                        <li>Conduct detailed surveys and interviews with officials and residents.</li>
+                        <li>Analyze current manual processes and legal compliance needs (Data Privacy, Katarungang Pambarangay).</li>
+                        <li>Define the initial minimum viable product (MVP) scope.</li>
                     </ul>
                 </div>
+            </div>
 
-                <!-- Partners -->
-                <div>
-                    <h4 class="text-xl font-bold mb-4 border-b border-primary-blue pb-2">Key Partners</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li>Barangay Council & Staff</li>
-                        <li>Local Philippine National Police (PNP)</li>
-                        <li>Lupong Tagapamayapa</li>
-                        <li>Local IT & Tech Volunteers</li>
+            <!-- Phase 2 -->
+            <div class="timeline-item">
+                <div class="timeline-bullet"></div>
+                <div class="pl-4">
+                    <h3 class="text-lg font-bold text-black mb-1">2. SOLUTION CONCEPTUALIZATION & DESIGN</h3>
+                    <p class="text-sm font-semibold mb-2 text-black/70">MID 2025</p>
+                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
+                        <li>Define key features (e.g., instant reporting, role-based dashboards, AI analytics engine).</li>
+                        <li>Design System Architecture and UI/UX for mobile-first compatibility.</li>
+                        <li>Establish data security and encryption protocols.</li>
                     </ul>
                 </div>
+            </div>
 
-                <!-- Funding -->
-                <div>
-                    <h4 class="text-xl font-bold mb-4 border-b border-primary-blue pb-2">Funding & Compliance</h4>
-                    <p class="text-sm">This project is supported by the Annual Barangay Budget and LGU Grants for e-governance, ensuring free public access.</p>
-                    <p class="text-sm mt-3 font-semibold text-accent-yellow">
-                        Fully compliant with the Philippine Data Privacy Act of 2012.
-                    </p>
+            <!-- Phase 3 -->
+            <div class="timeline-item">
+                <div class="timeline-bullet"></div>
+                <div class="pl-4">
+                    <h3 class="text-lg font-bold text-black mb-1">3. DEVELOPMENT & PROTOTYPE TESTING</h3>
+                    <p class="text-sm font-semibold mb-2 text-black/70">LATE 2025</p>
+                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
+                        <li>Build the initial version of the system (MVP).</li>
+                        <li>Conduct rigorous Alpha and Beta testing with staff and core residents.</li>
+                        <li>Refine and debug the system based on usability and performance metrics.</li>
+                    </ul>
                 </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-gray-700 text-center text-sm">
-                &copy; 2025 Barangay eBlotter System. All Rights Reserved.
+            <!-- Phase 4 -->
+            <div class="timeline-item">
+                <div class="timeline-bullet"></div>
+                <div class="pl-4">
+                    <h3 class="text-lg font-bold text-black mb-1">4. OPTIMIZATION & STAFF TRAINING</h3>
+                    <p class="text-sm font-semibold mb-2 text-black/70">EARLY 2026</p>
+                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
+                        <li>Refine system features and optimize database performance.</li>
+                        <li>Conduct comprehensive training sessions for all Barangay staff and Lupong Tagapamayapa.</li>
+                        <li>Formalize system adoption protocols with the Barangay Council.</li>
+                    </ul>
+                </div>
             </div>
-        </div>
-    </footer>
 
+            <!-- Phase 5 (Last item, no bottom line) -->
+            <div class="timeline-item !pb-0">
+                <div class="timeline-bullet"></div>
+                <div class="pl-4">
+                    <h3 class="text-lg font-bold text-black mb-1">5. LAUNCH & EXPANSION</h3>
+                    <p class="text-sm font-semibold mb-2 text-black/70">MID 2026</p>
+                    <ul class="list-disc ml-5 text-gray-700 space-y-1 text-sm">
+                        <li>Publicly launch the Barangay eBlotter System and commence official operation.</li>
+                        <li>Begin monitoring long-term system performance and adoption rate.</li>
+                        <li>Plan for Phase 2 integration with external Local Government Unit (LGU) databases.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+        
+    </div>
 </body>
 </html>
