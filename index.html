@@ -3,948 +3,809 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter System | 2025 Theme</title>
+    <title>4D Barangay eBlotter System</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        /* Modern, subtle background */
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; /* Slate-100 */ }
-        
-        /* Elevated, highly rounded card style */
-        .card { 
-            background-color: white; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Deeper shadow */
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Primary Button: Emerald/Green Focus */
-        .btn-primary { 
-            background-color: #059669; /* Emerald-600 */
-            color: white; 
-            padding: 12px 24px; 
-            border-radius: 12px; 
-            font-weight: 700; 
-            transition: all 0.2s; 
-            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.4);
-        }
-        .btn-primary:hover { 
-            background-color: #047857; /* Emerald-700 */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(5, 150, 105, 0.5);
-        }
-
-        /* Secondary/Neutral Button */
-        .btn-secondary { 
-            background-color: #e2e8f0; /* Slate-200 */
-            color: #1e293b; /* Slate-800 */
-            padding: 12px 24px; 
-            border-radius: 12px; 
-            font-weight: 600; 
-            transition: background-color 0.2s; 
-        }
-        .btn-secondary:hover { 
-            background-color: #cbd5e1; /* Slate-300 */
-        }
-
-        /* Modern Form Inputs with Focus Ring */
-        input:not([type="submit"]):not([type="button"]), textarea, select {
-            border: 1px solid #cbd5e1; /* Slate-300 */
-            border-radius: 10px;
-            padding: 10px 14px;
-            transition: all 0.2s;
-        }
-        input:focus, textarea:focus, select:focus {
-            border-color: #059669; /* Emerald-600 */
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
-            outline: none;
-        }
-
-        /* Status colors refinement */
-        .status-badge {
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 9999px; /* Pill shape */
-            font-size: 0.75rem;
-        }
-        .status-Pending { background-color: #fee2e2; color: #dc2626; } /* Red */
-        .status-UnderInvestigation { background-color: #fef3c7; color: #d97706; } /* Amber */
-        .status-Scheduled { background-color: #dbeafe; color: #2563eb; } /* Blue */
-        .status-Resolved { background-color: #d1fae5; color: #059669; } /* Emerald */
-        .status-Approved { background-color: #a7f3d0; color: #065f46; } /* Light Emerald */
-        .status-NeedsRevision { background-color: #fbcfe8; color: #db2777; } /* Pink */
-
-        /* Custom scrollbar for better look */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
-
-        /* Navigation Tab Style */
-        .nav-button.active {
-            border-color: #059669;
-            color: #059669;
-            font-weight: 700;
-        }
-    </style>
-</head>
-<body class="p-4 md:p-10 min-h-screen">
-
-    <div id="loader" class="fixed inset-0 bg-white bg-opacity-80 flex flex-col justify-center items-center z-50 hidden">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-500"></div>
-        <p class="ml-4 mt-4 text-emerald-600 font-semibold text-lg">Initializing Secure System...</p>
-    </div>
-
-    <!-- Header -->
-    <header class="mb-10 p-5 bg-white card sticky top-0 z-20">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div>
-                <h1 class="text-3xl font-extrabold text-slate-800">eBlotter Management</h1>
-                <p class="text-sm text-slate-500 mt-1">Barangay Public Service Portal</p>
-            </div>
-            <div id="auth-info" class="text-xs mt-3 md:mt-0 text-slate-600 flex flex-wrap items-center bg-slate-50 p-3 rounded-xl">
-                <span id="current-role" class="font-bold text-emerald-600 mr-4"></span>
-                <span id="current-user-id" class="break-all text-sm"></span>
-                <button onclick="logout()" class="ml-4 text-red-500 hover:text-red-700 font-bold text-sm underline-offset-4 hover:underline">Change Role</button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Role Selection View (Initial Screen) -->
-    <div id="role-selector" class="max-w-xl mx-auto card p-10 my-16">
-        <h2 class="text-3xl font-bold mb-8 text-slate-700 text-center">Welcome. Please Identify Yourself.</h2>
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <button onclick="selectRole('Complainant/Citizen')" class="btn-secondary text-center hover:bg-emerald-100 hover:text-emerald-800 flex flex-col items-center p-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mb-2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Citizen
-            </button>
-            <button onclick="selectRole('Barangay Staff/Secretary')" class="btn-secondary text-center hover:bg-emerald-100 hover:text-emerald-800 flex flex-col items-center p-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mb-2"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                Staff
-            </button>
-            <button onclick="selectRole('Barangay Captain/Lupon')" class="btn-secondary text-center hover:bg-emerald-100 hover:text-emerald-800 flex flex-col items-center p-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mb-2"><path d="m8 3 4 8 5-5 5 5L12 22 4 12 8 3z"/></svg>
-                Captain
-            </button>
-            <button onclick="selectRole('System Administrator')" class="btn-secondary text-center hover:bg-emerald-100 hover:text-emerald-800 flex flex-col items-center p-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mb-2"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14v-4"/><path d="M12 8h.01"/></svg>
-                Admin
-            </button>
-        </div>
-        <p class="text-sm text-slate-500 mt-6 italic text-center">This simulates role-based access control for system testing.</p>
-    </div>
-
-    <!-- Main Application Content (Hidden until role is selected) -->
-    <main id="app-content" class="hidden max-w-7xl mx-auto">
-        
-        <!-- Navigation Tabs -->
-        <nav class="flex space-x-4 border-b-2 border-slate-200 mb-8" id="nav-tabs"></nav>
-
-        <!-- Dynamic Content Area -->
-        <div id="dashboard-content">
-
-            <!-- CITIZEN VIEW -->
-            <div id="citizen-submit-report" class="tab-content card p-8 mb-8">
-                <h2 class="text-2xl font-bold mb-6 text-emerald-700">Submit Online Blotter Report</h2>
-                <form id="blotter-form" onsubmit="handleBlotterSubmission(event)">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <input type="text" id="c_name" placeholder="Your Full Name (Complainant)" required class="w-full">
-                        <input type="email" id="c_contact" placeholder="Contact Email/Number" required class="w-full">
-                        <input type="text" id="c_type" placeholder="Incident Type (e.g., Theft, Dispute, Violation)" required class="w-full">
-                        <input type="date" id="c_date" placeholder="Date of Incident" required class="w-full">
-                    </div>
-                    <textarea id="c_description" rows="5" placeholder="Detailed Description of the Incident (Be accurate and specific)" required class="w-full mt-6"></textarea>
-                    <button type="submit" class="btn-primary mt-6">Submit Report Securely</button>
-                    <div id="citizen-message" class="mt-4 p-3 rounded-lg text-sm font-medium hidden"></div>
-                </form>
-            </div>
-
-            <div id="citizen-track-status" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6 text-emerald-700">Your Submitted Reports</h2>
-                <div id="citizen-report-list" class="space-y-6">
-                    <!-- Citizen's specific reports will load here -->
-                    <div class="p-6 text-center text-slate-500 card">Loading your reports...</div>
-                </div>
-            </div>
-
-            <!-- STAFF/ADMIN/CAPTAIN SHARED VIEWS -->
-            <div id="view-records" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6 text-emerald-700">Blotter Records List</h2>
-                <div class="card p-4 mb-6 flex flex-wrap items-center justify-between bg-white border border-slate-200">
-                    <div class="text-sm font-medium text-slate-700 mb-2 md:mb-0">Filter Records:</div>
-                    <select id="status-filter" onchange="filterRecords(this.value)" class="p-2 border border-slate-300 rounded-lg text-sm">
-                        <option value="all">All Records</option>
-                        <option value="Pending">Pending (New)</option>
-                        <option value="Under Investigation">Under Investigation</option>
-                        <option value="Scheduled">Scheduled (Hearing)</option>
-                        <option value="Resolved">Resolved (Pending Captain Approval)</option>
-                        <option value="Approved">Approved (Closed)</option>
-                        <option value="Needs Revision">Needs Revision</option>
-                    </select>
-                </div>
-                <div id="blotter-table-container" class="overflow-x-auto card p-6 custom-scrollbar">
-                    <table class="min-w-full divide-y divide-slate-200">
-                        <thead class="bg-slate-50">
-                            <tr>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider rounded-tl-xl">ID</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Complainant</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Incident Type</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Reported On</th>
-                                <th id="table-actions-header" class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider rounded-tr-xl">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="blotter-records-body" class="bg-white divide-y divide-slate-100">
-                            <tr><td colspan="6" class="p-6 text-center text-slate-500">Loading records...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- STAFF SPECIFIC VIEWS -->
-            <div id="staff-dashboard" class="tab-content hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Record New Blotter Incident (Walk-in) -->
-                    <div class="card p-8 lg:col-span-2">
-                        <h2 class="text-2xl font-bold mb-6 text-emerald-700">New Walk-in Blotter Record</h2>
-                        <form id="staff-blotter-form" onsubmit="handleStaffBlotterSubmission(event)">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input type="text" id="s_c_name" placeholder="Complainant Name" required class="w-full">
-                                <input type="text" id="s_c_contact" placeholder="Contact Info" required class="w-full">
-                            </div>
-                            <input type="text" id="s_c_type" placeholder="Incident Type" required class="w-full mt-4">
-                            <textarea id="s_c_description" rows="4" placeholder="Detailed Description" required class="w-full mt-4"></textarea>
-                            <button type="submit" class="btn-primary mt-6">Securely Record Incident</button>
-                            <div id="staff-message" class="mt-4 p-3 rounded-lg text-sm font-medium hidden"></div>
-                        </form>
-                    </div>
-
-                    <!-- Cases needing Action -->
-                    <div class="card p-6 bg-slate-50 border border-slate-200">
-                        <h2 class="text-xl font-bold mb-4 text-red-600">Cases Needing Immediate Action</h2>
-                        <div id="staff-action-list" class="space-y-3 custom-scrollbar max-h-96 overflow-y-auto">
-                            <!-- List of Pending/Under Investigation cases -->
-                            <div class="p-3 text-center text-slate-500 bg-white rounded-xl">No critical cases pending.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CAPTAIN SPECIFIC VIEWS -->
-            <div id="captain-dashboard" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6 text-emerald-700">Management Overview & Analytics</h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                    <!-- Statistical Reports -->
-                    <div class="card p-6 text-center bg-blue-50 border border-blue-200">
-                        <p class="text-5xl font-extrabold text-blue-600" id="stat-total">0</p>
-                        <p class="text-sm font-medium text-slate-600 mt-2">Total Blotter Reports</p>
-                    </div>
-                    <div class="card p-6 text-center bg-emerald-50 border border-emerald-200">
-                        <p class="text-5xl font-extrabold text-emerald-600" id="stat-resolved">0</p>
-                        <p class="text-sm font-medium text-slate-600 mt-2">Resolved & Approved Cases</p>
-                    </div>
-                    <div class="card p-6 text-center bg-red-50 border border-red-200">
-                        <p class="text-5xl font-extrabold text-red-600" id="stat-pending">0</p>
-                        <p class="text-sm font-medium text-slate-600 mt-2">Pending/Active Cases</p>
-                    </div>
-                </div>
-                
-                <h2 class="text-2xl font-bold mb-6 text-red-700">Resolution Approval Queue</h2>
-                <div id="captain-review-list" class="space-y-4 custom-scrollbar max-h-96 overflow-y-auto">
-                    <!-- List of Resolved cases for Captain approval -->
-                    <div class="p-6 text-center text-slate-500 card">No cases currently awaiting final approval.</div>
-                </div>
-            </div>
-
-            <!-- ADMIN SPECIFIC VIEWS -->
-            <div id="admin-dashboard" class="tab-content hidden">
-                <h2 class="text-2xl font-bold mb-6 text-emerald-700">System Administration & Configuration</h2>
-                
-                <!-- Manage User Accounts (Mocked) -->
-                <div class="card p-8 mb-6">
-                    <h3 class="text-xl font-bold mb-4 border-b pb-2 text-slate-700">User Role Management (Mock)</h3>
-                    <p class="text-sm text-slate-600 mb-6">In a live system, this dashboard would control user privileges and account status. Current simulation roles:</p>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <span class="p-3 bg-blue-50 text-blue-700 font-medium rounded-xl text-center">Admin</span>
-                        <span class="p-3 bg-red-50 text-red-700 font-medium rounded-xl text-center">Captain/Lupon</span>
-                        <span class="p-3 bg-yellow-50 text-yellow-700 font-medium rounded-xl text-center">Staff/Secretary</span>
-                        <span class="p-3 bg-emerald-50 text-emerald-700 font-medium rounded-xl text-center">Citizen</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- MODAL for Status/Resolution Update (Used by Staff & Captain) -->
-            <div id="action-modal" class="fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 transition-opacity duration-300 hidden">
-                <div class="card w-full max-w-lg p-8 m-4 animate-in fade-in zoom-in" style="--tw-animate-duration: 300ms;">
-                    <h3 id="modal-title" class="text-2xl font-bold mb-4 text-slate-800">Update Blotter Status</h3>
-                    <form id="modal-form" onsubmit="handleModalAction(event)">
-                        <input type="hidden" id="modal-blotter-id">
-                        
-                        <div id="status-field" class="mb-5">
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Update Status</label>
-                            <select id="modal-status" class="w-full" required>
-                                <option value="Under Investigation">Under Investigation</option>
-                                <option value="Scheduled">Scheduled Conciliation/Mediation</option>
-                                <option value="Resolved">Resolved</option>
-                                <option value="Needs Revision">Send Back for Revision</option>
-                            </select>
-                        </div>
-                        
-                        <div id="schedule-field" class="mb-5 hidden">
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Schedule Date & Time</label>
-                            <input type="datetime-local" id="modal-schedule" class="w-full">
-                        </div>
-                        
-                        <div id="resolution-field" class="mb-5 hidden">
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Case Resolution/Outcome</label>
-                            <textarea id="modal-resolution" rows="4" placeholder="Enter final resolution details here..." class="w-full"></textarea>
-                        </div>
-                        
-                        <div id="approval-field" class="mb-5 hidden">
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Captain's Decision</label>
-                            <select id="modal-approval" class="w-full" required>
-                                <option value="">Select Action</option>
-                                <option value="Approved">Approve Resolution (Close Case)</option>
-                                <option value="Needs Revision">Send Back to Staff for Revision</option>
-                            </select>
-                        </div>
-
-                        <div class="flex justify-end space-x-4 pt-4">
-                            <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
-                            <button type="submit" id="modal-submit-btn" class="btn-primary">Save Changes</button>
-                        </div>
-                    </form>
-                    <div id="modal-error" class="mt-3 text-sm text-red-500 font-medium hidden"></div>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- Firebase SDK Imports -->
+    <!-- Load Three.js for 4D Background Effect -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Load Firebase libraries -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, orderBy, getDocs, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // Use the globally provided Firebase config and auth token
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by the environment
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        setLogLevel('debug'); // Enable detailed logging
-
-        let app;
-        let db;
-        let auth;
+        let app, db, auth;
+        let unsubscribeBlotters = null;
         let currentUserId = null;
-        let currentRole = null;
-        let isAuthReady = false;
 
-        // Global variables for other functions to use
-        window.db = db;
-        window.auth = auth;
-        window.getCurrentUserId = () => currentUserId;
-        window.getCurrentRole = () => currentRole;
-        window.onSnapshot = onSnapshot;
-        window.collection = collection;
-        window.query = query;
-        window.where = where;
-        window.updateDoc = updateDoc;
-        window.doc = doc;
-        window.addDoc = addDoc;
-        window.serverTimestamp = serverTimestamp;
+        // Make Firebase objects globally accessible for the main script
+        window.firebaseApp = {};
 
-        const loader = document.getElementById('loader');
+        // Helper for error messages
+        window.showError = (message) => {
+            document.getElementById('toast-message').textContent = message;
+            document.getElementById('error-toast').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('error-toast').classList.add('hidden');
+            }, 5000);
+        };
 
-        // --- FIREBASE INITIALIZATION AND AUTHENTICATION ---
-        async function initializeFirebase() {
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.error("Firebase configuration not found.");
-                // Fallback UI indication
-                document.getElementById('loader').innerHTML = `<p class="text-red-600">Initialization failed. Firebase Config is missing.</p>`;
-                return;
-            }
-
+        // Initialize Firebase and Authentication
+        const initFirebase = async () => {
             try {
+                // setLogLevel('debug'); // Uncomment for verbose Firestore logging
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
                 
-                // Expose initialized instances to the window
-                window.db = db;
-                window.auth = auth;
+                // Expose to global scope for use in non-module script
+                window.firebaseApp.db = db;
 
-                // 1. Listen for Auth State Changes
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        document.getElementById('current-user-id').textContent = `ID: ${currentUserId.substring(0, 12)}...`;
-                    } else {
-                        // User logged out or initial state
-                        currentUserId = null;
-                        document.getElementById('current-user-id').textContent = 'ID: Not Authenticated';
-                    }
-                    isAuthReady = true;
-                    // Start listening to data once authenticated status is known
-                    if (currentRole) {
-                        startRealtimeListeners();
-                    }
-                });
-
-                // 2. Sign In
-                loader.classList.remove('hidden');
+                // Sign in using the custom token or anonymously if not available
                 if (initialAuthToken) {
                     await signInWithCustomToken(auth, initialAuthToken);
                 } else {
                     await signInAnonymously(auth);
                 }
-                loader.classList.add('hidden');
+
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        window.firebaseApp.userId = currentUserId;
+                        document.getElementById('user-id-display').textContent = `User ID: ${currentUserId}`;
+                        document.getElementById('main-app').classList.remove('opacity-0');
+                        
+                        // Start real-time data listener only after auth is ready
+                        window.startBlotterListener(db, appId, currentUserId);
+                    } else {
+                        showError("Authentication failed. Please check connection.");
+                    }
+                });
 
             } catch (error) {
-                console.error("Firebase initialization or sign-in failed:", error);
-                document.getElementById('loader').innerHTML = `<p class="text-red-600">Initialization failed. Check console for details.</p>`;
+                console.error("Error during Firebase initialization:", error);
+                showError("Failed to initialize system: " + error.message);
             }
-        }
+        };
 
-        window.initializeFirebase = initializeFirebase;
+        // Expose Firebase Firestore functions to the global scope
+        window.firebaseApp.firestore = {
+            doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, serverTimestamp
+        };
 
-        // Function to select a role and show the main app
-        window.selectRole = (role) => {
-            currentRole = role;
-            document.getElementById('role-selector').classList.add('hidden');
-            document.getElementById('app-content').classList.remove('hidden');
-            document.getElementById('current-role').textContent = `${role}`;
+        // This function will be called from the main script to start listening to data
+        window.startBlotterListener = (dbInstance, appId, userId) => {
+            if (unsubscribeBlotters) {
+                unsubscribeBlotters();
+            }
+
+            // Public Data Path: /artifacts/{appId}/public/data/blotterRecords
+            const blotterCollectionRef = collection(dbInstance, 'artifacts', appId, 'public', 'data', 'blotterRecords');
             
-            // Re-render UI and start listeners based on the new role
-            setupNavigation(role);
-            if (isAuthReady) {
-                startRealtimeListeners();
-            }
-        };
+            // Set up real-time listener
+            const q = query(blotterCollectionRef);
 
-        // Function to log out (or reset role)
-        window.logout = () => {
-            currentRole = null;
-            // Clear blotter cache and stop listener
-            blottersCache = [];
-            if (unsubscribeBlotters) {
-                unsubscribeBlotters();
-                unsubscribeBlotters = null;
-            }
-
-            // Hide all tabs and content
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById('nav-tabs').innerHTML = '';
-            document.getElementById('app-content').classList.add('hidden');
-            document.getElementById('role-selector').classList.remove('hidden');
-            document.getElementById('current-role').textContent = '';
-            document.getElementById('citizen-message').classList.add('hidden');
-            document.getElementById('staff-message').classList.add('hidden');
-        };
-
-        // Call initialization on load
-        initializeFirebase();
-
-
-        // --- REAL-TIME DATA LISTENERS ---
-        function getBlotterCollectionRef() {
-            // Path: /artifacts/{appId}/public/data/blotters
-            return collection(db, `artifacts/${appId}/public/data/blotters`);
-        }
-
-        let blottersCache = [];
-        let unsubscribeBlotters = null;
-
-        function startRealtimeListeners() {
-            if (!isAuthReady || !currentUserId || !db) return;
-
-            // Clear previous listener if it exists
-            if (unsubscribeBlotters) {
-                unsubscribeBlotters();
-                unsubscribeBlotters = null;
-            }
-
-            const blotterRef = getBlotterCollectionRef();
-
-            // Set up a universal listener for all blotters
-            unsubscribeBlotters = onSnapshot(blotterRef, (snapshot) => {
-                blottersCache = [];
-                snapshot.forEach(doc => {
-                    // Check if dateReported is a valid Firestore Timestamp before converting
-                    const data = doc.data();
-                    const dateReported = data.dateReported && typeof data.dateReported.toDate === 'function' 
-                                         ? data.dateReported.toDate() 
-                                         : new Date(); // Fallback to current date if invalid
-                    
-                    blottersCache.push({ 
-                        id: doc.id, 
-                        ...data, 
-                        dateReported: dateReported 
-                    });
-                });
-                
-                // Sort by date reported descending (newest first)
-                blottersCache.sort((a, b) => b.dateReported.getTime() - a.dateReported.getTime());
-
-                // Re-render all role-specific components
-                renderCitizenReports();
-                renderBlotterTable();
-                renderStaffActionList();
-                renderCaptainReviewList();
-                renderStatistics();
+            unsubscribeBlotters = onSnapshot(q, (snapshot) => {
+                const blotters = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                // Call the main JS function to update the UI
+                window.handleBlotterUpdate(blotters, userId);
             }, (error) => {
-                console.error("Error listening to blotter collection:", error);
-                document.getElementById('blotter-records-body').innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+                console.error("Firestore snapshot error:", error);
+                showError("Real-time data error: " + error.message);
             });
-        }
-        
-        window.startRealtimeListeners = startRealtimeListeners;
-
-        // --- DATA RENDERING FUNCTIONS ---
-
-        function getStatusColor(status) {
-            return `status-${status.replace(/[^a-zA-Z]/g, '')}`;
-        }
-
-        // 1. Render Citizen's Reports (Track Blotter Status)
-        function renderCitizenReports() {
-            if (currentRole !== 'Complainant/Citizen') return;
-
-            const list = document.getElementById('citizen-report-list');
-            const citizenReports = blottersCache.filter(b => b.reporterId === currentUserId);
-            
-            if (list.closest('.tab-content').classList.contains('hidden') && !citizenReports.length) return; // Optimization
-
-            if (citizenReports.length === 0) {
-                list.innerHTML = '<div class="p-8 text-center text-slate-500 card border-2 border-dashed border-emerald-300">You have not submitted any reports yet. Use the "Submit Report" tab.</div>';
-                return;
-            }
-
-            list.innerHTML = citizenReports.map(b => `
-                <div class="card p-5 border-l-4 border-emerald-500">
-                    <div class="flex justify-between items-start mb-2">
-                        <p class="font-bold text-xl text-slate-800">${b.incidentType}</p>
-                        <span class="status-badge ${getStatusColor(b.status)}">${b.status}</span>
-                    </div>
-                    <p class="text-xs text-slate-400 font-mono mb-3">Report ID: ${b.id.substring(0, 10)}</p>
-                    
-                    <div class="text-sm text-slate-600 space-y-1">
-                        <p><strong>Incident Date:</strong> ${b.dateOfIncident || 'N/A'}</p>
-                        ${b.schedule ? `<p class="font-semibold text-blue-600">Hearing Scheduled: ${new Date(b.schedule).toLocaleString()}</p>` : ''}
-                    </div>
-                    
-                    ${b.resolution ? `<div class="mt-3 pt-3 border-t border-slate-100">
-                        <p class="text-sm font-semibold text-slate-700">Resolution:</p>
-                        <p class="text-sm italic text-slate-500">${b.resolution.substring(0, 100)}...</p>
-                    </div>` : ''}
-                    
-                    <span class="text-xs text-slate-400 mt-2 block text-right">Reported: ${b.dateReported.toLocaleDateString()}</span>
-                </div>
-            `).join('');
-        }
-
-        // 2. Render Blotter Table (View Records - Staff/Captain/Admin)
-        let currentFilter = 'all';
-        window.filterRecords = (status) => {
-            currentFilter = status;
-            renderBlotterTable();
         };
 
-        function renderBlotterTable() {
-            if (!['Barangay Staff/Secretary', 'Barangay Captain/Lupon', 'System Administrator'].includes(currentRole)) return;
+        initFirebase();
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d111c; /* Dark blue background */
+            color: #e5e7eb;
+            overflow: hidden; /* Hide scrollbar for immersive background */
+        }
+        #three-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.2; /* Subtly dim the 3D effect */
+        }
+        .app-content {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-y: auto; /* Allow scrolling within the content area */
+        }
+        /* Custom scrollbar for better visual integration */
+        .app-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .app-content::-webkit-scrollbar-thumb {
+            background-color: #4f46e5;
+            border-radius: 4px;
+        }
+        .app-content::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Three.js 4D Background Container -->
+    <div id="three-container"></div>
+
+    <!-- Main Application Content -->
+    <div id="main-app" class="app-content transition-opacity duration-500 opacity-0">
+        <header class="text-center mb-10 p-4 rounded-xl bg-gray-800/80 backdrop-blur-sm shadow-2xl">
+            <h1 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+                Barangay eBlotter System
+            </h1>
+            <p class="text-sm text-gray-400 mt-2">Responsive & Real-time Case Management Interface</p>
+        </header>
+
+        <!-- User Role Switcher -->
+        <div class="mb-8 p-4 bg-gray-800/70 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex-grow">
+                <label for="role-select" class="block text-sm font-medium text-indigo-300 mb-1">Select User Role:</label>
+                <select id="role-select" onchange="switchRole(this.value)" class="w-full md:w-64 p-2 bg-gray-900 border border-indigo-500 rounded-lg text-white shadow-inner focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="Citizen">Complainant/Citizen</option>
+                    <option value="Staff">Barangay Staff/Secretary</option>
+                    <option value="Admin">System Administrator</option>
+                    <option value="Captain">Barangay Captain/Lupon</option>
+                </select>
+            </div>
+            <div id="user-id-display" class="text-xs text-gray-400 bg-gray-900 p-2 rounded-lg truncate">User ID: N/A</div>
+        </div>
+        
+        <!-- Main Content Area (Role-based views injected here) -->
+        <div id="dashboard-container" class="space-y-6">
+            <!-- Initial content will be loaded by switchRole() -->
+        </div>
+
+        <!-- Custom Modal for Notifications/Confirmations (No alert() or confirm()) -->
+        <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50">
+            <div class="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full border border-indigo-600">
+                <h3 id="modal-title" class="text-xl font-bold text-indigo-400 mb-4">Modal Title</h3>
+                <p id="modal-body" class="text-gray-300 mb-6">Modal body content.</p>
+                <div class="flex justify-end gap-3">
+                    <button id="modal-cancel-btn" onclick="closeModal(false)" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-500 transition duration-150 hidden">Cancel</button>
+                    <button id="modal-confirm-btn" onclick="closeModal(true)" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500 transition duration-150">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Error Toast -->
+        <div id="error-toast" class="fixed bottom-4 right-4 hidden bg-red-800 text-white p-4 rounded-lg shadow-2xl z-50 transition duration-300" role="alert">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                <span id="toast-message" class="font-medium">An error occurred.</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ====================================================================
+        // THREE.JS IMPLEMENTATION (4D BACKGROUND)
+        // ====================================================================
+
+        let scene, camera, renderer, particles, particleSystem;
+
+        function initThree() {
+            const container = document.getElementById('three-container');
             
-            const tbody = document.getElementById('blotter-records-body');
-            let filteredReports = blottersCache;
+            // Scene Setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
 
-            if (currentFilter !== 'all') {
-                filteredReports = blottersCache.filter(b => b.status === currentFilter);
+            // Renderer Setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Particle Geometry
+            const particleCount = 1000;
+            particles = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const color = new THREE.Color();
+            
+            // Create random particles in a box space
+            for (let i = 0; i < particleCount; i++) {
+                // Position (x, y, z)
+                positions[i * 3 + 0] = (Math.random() - 0.5) * 50;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 50;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+                
+                // Color (subtle purple/indigo gradient)
+                color.setHSL(0.6 + Math.random() * 0.1, 0.7, 0.5); 
+                colors[i * 3 + 0] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
             }
 
-            // Determine visible actions based on role
-            const isStaff = currentRole === 'Barangay Staff/Secretary';
-            const isCaptain = currentRole === 'Barangay Captain/Lupon';
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            particles.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-            // Update header for actions
-            document.getElementById('table-actions-header').textContent = isStaff ? 'Action (Staff)' : (isCaptain ? 'Approval (Captain)' : 'Details');
+            // Particle Material
+            const particleMaterial = new THREE.PointsMaterial({
+                size: 0.05,
+                vertexColors: true,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                opacity: 0.8
+            });
 
-            if (filteredReports.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">No ${currentFilter === 'all' ? '' : currentFilter} records found.</td></tr>`;
-                return;
+            // Particle System
+            particleSystem = new THREE.Points(particles, particleMaterial);
+            scene.add(particleSystem);
+
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Subtle animation for the "4D" effect
+            particleSystem.rotation.y += 0.0005;
+            particleSystem.rotation.x += 0.0001;
+
+            const positions = particleSystem.geometry.attributes.position.array;
+            
+            // Move particles slightly towards the center and then re-randomize
+            for (let i = 0; i < positions.length / 3; i++) {
+                positions[i * 3] += Math.sin(Date.now() * 0.0001 + i * 1) * 0.0001;
+                positions[i * 3 + 1] += Math.cos(Date.now() * 0.0001 + i * 1) * 0.0001;
+                positions[i * 3 + 2] += Math.sin(Date.now() * 0.0001 + i * 1) * 0.0001;
+            }
+            particleSystem.geometry.attributes.position.needsUpdate = true;
+
+
+            renderer.render(scene, camera);
+        }
+
+        // Start the 3D background on window load
+        window.onload = function () {
+            initThree();
+            animate();
+        };
+
+        // ====================================================================
+        // FIREBASE & APPLICATION LOGIC
+        // ====================================================================
+
+        let allBlotters = [];
+        let currentRole = 'Citizen';
+        let blotterToUpdateId = null;
+        let blotterActionCallback = null;
+
+        // Global function to receive real-time updates from Firestore listener
+        window.handleBlotterUpdate = (blotters, userId) => {
+            allBlotters = blotters;
+            // Re-render the dashboard whenever data changes
+            renderDashboard(currentRole, userId); 
+        };
+
+        // --- Utility Functions ---
+
+        // Custom Modal (replaces alert/confirm)
+        const showModal = (title, body, isConfirm, callback) => {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').innerHTML = body;
+            
+            const modal = document.getElementById('custom-modal');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+
+            if (isConfirm) {
+                cancelBtn.classList.remove('hidden');
+                confirmBtn.textContent = 'Proceed';
+                blotterActionCallback = callback;
+            } else {
+                cancelBtn.classList.add('hidden');
+                confirmBtn.textContent = 'OK';
+                blotterActionCallback = null; // No action needed for simple alerts
             }
 
-            tbody.innerHTML = filteredReports.map(b => {
-                let actionButton = `<span class="text-slate-400 text-sm">View</span>`;
-                const isFinal = b.status === 'Approved';
+            modal.style.display = 'flex';
+        };
 
-                if (isStaff && !isFinal) {
-                    // Staff: Update Status, Schedule, Manage Resolution
-                    actionButton = `<button onclick="openModal('${b.id}', 'staff')" class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline">Update Status</button>`;
-                } else if (isCaptain && b.status === 'Resolved') {
-                    // Captain: Review & Approve
-                    actionButton = `<button onclick="openModal('${b.id}', 'captain')" class="text-red-600 hover:text-red-800 font-bold hover:underline">Review Decision</button>`;
-                } else if (isCaptain && b.status === 'Needs Revision') {
-                    // Captain: Informational only
-                    actionButton = `<span class="text-pink-600 font-medium">Revision Needed</span>`;
+        window.closeModal = (confirmed) => {
+            document.getElementById('custom-modal').style.display = 'hidden';
+            if (confirmed && blotterActionCallback) {
+                blotterActionCallback();
+            }
+            // Reset for safety
+            blotterActionCallback = null;
+        };
+
+        const generateBlotterId = () => {
+            const timestamp = Date.now().toString(36);
+            const random = Math.random().toString(36).substring(2, 5);
+            return (timestamp + random).toUpperCase();
+        };
+
+        const formatDate = (timestamp) => {
+            if (!timestamp) return 'N/A';
+            // Firestore serverTimestamp is an object until saved, then a Timestamp
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        };
+
+        // --- Core Firestore Operations ---
+
+        const updateBlotterStatus = async (blotterId, newStatus, scheduledDate = null, remarks = '') => {
+            const { db, userId, firestore } = window.firebaseApp;
+            if (!db || !userId) return showError("System not initialized or user not logged in.");
+
+            const { doc, updateDoc, collection } = firestore;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const blotterRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'blotterRecords'), blotterId);
+            
+            try {
+                const updateData = {
+                    status: newStatus,
+                    remarks: remarks,
+                    lastUpdatedBy: userId,
+                    lastUpdated: firestore.serverTimestamp()
+                };
+
+                if (scheduledDate) {
+                    updateData.mediationDate = scheduledDate;
+                }
+
+                await updateDoc(blotterRef, updateData);
+                showModal('Success', `Case **${blotterId}** status updated to **${newStatus}**.`, false);
+
+            } catch (error) {
+                console.error("Error updating document:", error);
+                showError("Failed to update case status: " + error.message);
+            }
+        };
+
+        // --- Role-Based Dashboard Rendering ---
+
+        const switchRole = (role) => {
+            currentRole = role;
+            const userId = window.firebaseApp.userId;
+            renderDashboard(role, userId);
+        };
+
+        const renderDashboard = (role, userId) => {
+            const container = document.getElementById('dashboard-container');
+            let contentHTML = '';
+
+            switch (role) {
+                case 'Citizen':
+                    contentHTML = renderCitizenView(userId);
+                    break;
+                case 'Staff':
+                    contentHTML = renderStaffView(userId);
+                    break;
+                case 'Admin':
+                    contentHTML = renderAdminView(userId);
+                    break;
+                case 'Captain':
+                    contentHTML = renderCaptainView(userId);
+                    break;
+            }
+
+            container.innerHTML = contentHTML;
+            
+            // Re-attach event listeners after innerHTML is set (for Staff/Captain views)
+            if (role === 'Staff' || role === 'Captain') {
+                attachModalEventListeners();
+            }
+            if (role === 'Citizen') {
+                attachCitizenFormListener();
+            }
+        };
+
+        // --- Citizen View ---
+
+        const renderCitizenView = (userId) => {
+            const citizenBlotters = allBlotters.filter(b => b.reporterId === userId);
+
+            const listItems = citizenBlotters.length > 0
+                ? citizenBlotters.map(b => `
+                    <li class="p-4 bg-gray-700/70 rounded-lg shadow-md border-l-4 border-indigo-400 flex justify-between items-center flex-wrap">
+                        <div>
+                            <p class="font-bold text-indigo-300">Case ID: ${b.id}</p>
+                            <p class="text-sm text-gray-400">Incident: ${b.incidentType}</p>
+                            <p class="text-sm text-gray-400">Details: ${b.details.substring(0, 50)}...</p>
+                        </div>
+                        <div class="text-right mt-2 md:mt-0">
+                            <span class="inline-block px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(b.status)}">
+                                ${b.status}
+                            </span>
+                            <p class="text-xs text-gray-500 mt-1">Filed: ${formatDate(b.timestamp)}</p>
+                        </div>
+                    </li>
+                `).join('')
+                : '<p class="text-center text-gray-400 p-4 bg-gray-800/70 rounded-lg">No blotter records found for your user ID.</p>';
+
+
+            return `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Submit Online Blotter/Complaint -->
+                    <div class="lg:col-span-1 p-6 bg-gray-800/70 rounded-xl shadow-2xl border border-indigo-700 h-fit">
+                        <h2 class="text-2xl font-semibold mb-4 text-indigo-300">Submit New Complaint</h2>
+                        <form id="blotter-form" class="space-y-4">
+                            <div>
+                                <label for="incidentType" class="block text-sm font-medium text-gray-400">Incident Type</label>
+                                <select id="incidentType" required class="w-full p-2 bg-gray-900 border border-gray-600 rounded-lg text-white focus:ring-indigo-500">
+                                    <option value="">Select Type</option>
+                                    <option value="Physical Dispute">Physical Dispute</option>
+                                    <option value="Theft/Robbery">Theft/Robbery</option>
+                                    <option value="Property Damage">Property Damage</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="details" class="block text-sm font-medium text-gray-400">Details of Incident</label>
+                                <textarea id="details" rows="4" required class="w-full p-2 bg-gray-900 border border-gray-600 rounded-lg text-white focus:ring-indigo-500" placeholder="Provide a brief description..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition duration-200 shadow-md">
+                                Submit Blotter
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Track Case Status -->
+                    <div class="lg:col-span-2 p-6 bg-gray-800/70 rounded-xl shadow-2xl border border-gray-700">
+                        <h2 class="text-2xl font-semibold mb-4 text-indigo-300">Your Case Status</h2>
+                        <ul class="space-y-3">
+                            ${listItems}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        };
+        
+        const attachCitizenFormListener = () => {
+            const form = document.getElementById('blotter-form');
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const { db, userId, firestore } = window.firebaseApp;
+                    if (!db || !userId) return showError("System not initialized or user not logged in.");
+
+                    const incidentType = document.getElementById('incidentType').value;
+                    const details = document.getElementById('details').value;
+                    
+                    if (!incidentType || !details) return showError("Please fill out all fields.");
+
+                    const newBlotter = {
+                        blotterId: generateBlotterId(), // Using custom ID generator for presentation
+                        reporterId: userId,
+                        incidentType: incidentType,
+                        details: details,
+                        status: 'Filed',
+                        timestamp: firestore.serverTimestamp(),
+                        lastUpdated: firestore.serverTimestamp()
+                    };
+
+                    try {
+                        const { addDoc, collection } = firestore;
+                        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                        const blotterCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'blotterRecords');
+                        
+                        await addDoc(blotterCollectionRef, newBlotter);
+                        
+                        showModal('Success!', `Your complaint has been successfully filed with Case ID: **${newBlotter.blotterId}**. You can track its status below.`, false);
+                        form.reset(); // Clear the form
+                    } catch (error) {
+                        console.error("Error submitting blotter:", error);
+                        showError("Failed to submit blotter: " + error.message);
+                    }
+                });
+            }
+        };
+
+        // --- Staff View ---
+
+        const renderStaffView = (userId) => {
+            // Include: Update Case Status/Details, Schedule Conciliation/Mediation, Record New Incident Data, Search & View Blotter Records
+            const openCases = allBlotters.filter(b => b.status !== 'Closed' && b.status !== 'Approved');
+
+            return `
+                <div class="space-y-6">
+                    <h2 class="text-3xl font-bold text-indigo-300">Staff Dashboard</h2>
+
+                    <!-- Record New Incident Data (Mocked) -->
+                    <div class="p-6 bg-gray-800/70 rounded-xl shadow-xl border border-gray-700">
+                        <h3 class="text-xl font-semibold mb-3 text-indigo-400">Record New Incident Data</h3>
+                        <p class="text-gray-400">
+                            Use a separate form to record incidents not yet reported by a citizen. This functionality is part of the "Record New Incident Data" use case. (Mocked: Use the Citizen form to simulate this.)
+                        </p>
+                    </div>
+
+                    <!-- Search & View Blotter Records (Table) -->
+                    <div class="p-6 bg-gray-800/70 rounded-xl shadow-xl border border-indigo-700">
+                        <h3 class="text-xl font-semibold mb-4 text-indigo-400">Open Cases for Action (${openCases.length})</h3>
+                        ${renderBlotterTable(openCases, 'Staff')}
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- Admin View ---
+
+        const renderAdminView = (userId) => {
+            // Include: Generate Statistical Reports (incl. AI Insights), Search & View Blotter Records, Manage User Accounts & Roles
+            const closedCases = allBlotters.filter(b => b.status === 'Closed' || b.status === 'Approved').length;
+            const openCases = allBlotters.filter(b => b.status !== 'Closed' && b.status !== 'Approved').length;
+            const totalCases = allBlotters.length;
+            const mediationScheduled = allBlotters.filter(b => b.status === 'Scheduled').length;
+
+            return `
+                <div class="space-y-6">
+                    <h2 class="text-3xl font-bold text-indigo-300">System Administrator Dashboard</h2>
+
+                    <!-- Statistical Reports (Mocked AI Insights) -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        ${renderStatCard('Total Cases', totalCases, 'bg-purple-600', 'fas fa-chart-line')}
+                        ${renderStatCard('Open Cases', openCases, 'bg-blue-600', 'fas fa-clock')}
+                        ${renderStatCard('Closed Cases', closedCases, 'bg-green-600', 'fas fa-check-circle')}
+                        ${renderStatCard('Mediation Scheduled', mediationScheduled, 'bg-yellow-600', 'fas fa-calendar')}
+                    </div>
+
+                    <div class="p-6 bg-gray-800/70 rounded-xl shadow-xl border border-indigo-700">
+                        <h3 class="text-xl font-semibold mb-4 text-indigo-400">AI Insights & Trends (Mocked)</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-300 ml-4">
+                            <li><span class="font-bold text-red-400">High Risk:</span> Theft/Robbery incidents rose by 15% in the last quarter (Predicted hotspot: Zone 5).</li>
+                            <li><span class="font-bold text-green-400">Efficiency:</span> Average case resolution time reduced by 5 days due to new scheduling process.</li>
+                            <li><span class="font-bold text-blue-400">System Load:</span> 85% of citizens use the Chatbot Interface (Submit/Track).</li>
+                        </ul>
+                    </div>
+
+                    <!-- Search & View Blotter Records (Table) -->
+                    <div class="p-6 bg-gray-800/70 rounded-xl shadow-xl border border-gray-700">
+                        <h3 class="text-xl font-semibold mb-4 text-indigo-400">Full Blotter Records</h3>
+                        ${renderBlotterTable(allBlotters, 'Admin')}
+                    </div>
+
+                    <!-- Manage User Accounts & Roles (Mocked) -->
+                    <div class="p-6 bg-gray-800/70 rounded-xl shadow-xl border border-gray-700">
+                        <h3 class="text-xl font-semibold mb-3 text-indigo-400">Manage User Accounts & Roles (Mocked)</h3>
+                        <p class="text-gray-400">
+                            Interface for managing Barangay Staff, Captains, and Admin accounts would be implemented here, allowing for role assignment and account deactivation.
+                        </p>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderStatCard = (title, value, color, iconClass) => `
+            <div class="p-4 ${color} rounded-xl shadow-xl flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-white/80">${title}</p>
+                    <p class="text-3xl font-bold text-white">${value}</p>
+                </div>
+                <!-- Mock Icon -->
+                <svg class="w-8 h-8 text-white/70" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </div>
+        `;
+
+        // --- Captain View ---
+
+        const renderCaptainView = (userId) => {
+            // Include: Review & Approve Case Decisions
+            const casesPendingApproval = allBlotters.filter(b => b.status === 'Decision Ready');
+
+            return `
+                <div class="space-y-6">
+                    <h2 class="text-3xl font-bold text-indigo-300">Barangay Captain / Lupon Dashboard</h2>
+                    
+                    <!-- Review & Approve Case Decisions -->
+                    <div class="p-6 bg-gray-800/70 rounded-xl shadow-xl border border-indigo-700">
+                        <h3 class="text-xl font-semibold mb-4 text-indigo-400">Cases Pending Final Decision (${casesPendingApproval.length})</h3>
+                        ${renderBlotterTable(casesPendingApproval, 'Captain')}
+                    </div>
+
+                    <!-- Other Duties Mock -->
+                    <div class="p-6 bg-gray-800/70 rounded-xl shadow-xl border border-gray-700">
+                        <h3 class="text-xl font-semibold mb-3 text-indigo-400">Other Lupon/Captain Tasks (Mocked)</h3>
+                        <p class="text-gray-400">
+                            The Captain/Lupon also reviews statistical reports and operational insights to make policy decisions based on the data provided by the Administrator.
+                        </p>
+                    </div>
+                </div>
+            `;
+        };
+
+        // --- Shared Table Renderer ---
+
+        const getStatusColor = (status) => {
+            switch (status) {
+                case 'Filed': return 'bg-blue-600 text-white';
+                case 'Scheduled': return 'bg-yellow-600 text-gray-900';
+                case 'Review':
+                case 'Decision Ready': return 'bg-red-600 text-white';
+                case 'Closed': return 'bg-green-600 text-white';
+                case 'Approved': return 'bg-indigo-600 text-white';
+                default: return 'bg-gray-500 text-white';
+            }
+        };
+
+        const renderBlotterTable = (blotters, viewerRole) => {
+            if (blotters.length === 0) {
+                return '<p class="text-center text-gray-400 p-4">No records to display for this view.</p>';
+            }
+
+            // Sort by status (Pending/Review first)
+            blotters.sort((a, b) => {
+                if (a.status === 'Decision Ready' && b.status !== 'Decision Ready') return -1;
+                if (a.status !== 'Decision Ready' && b.status === 'Decision Ready') return 1;
+                return b.timestamp?.toMillis() - a.timestamp?.toMillis(); // Latest first
+            });
+
+            const rows = blotters.map(b => {
+                let actionButton = '';
+                if (viewerRole === 'Staff' && b.status !== 'Decision Ready' && b.status !== 'Approved' && b.status !== 'Closed') {
+                    actionButton = `<button data-id="${b.id}" data-type="staff-update" class="text-sm font-medium text-indigo-400 hover:text-indigo-200 transition duration-150">Update/Schedule</button>`;
+                } else if (viewerRole === 'Captain' && b.status === 'Decision Ready') {
+                    actionButton = `
+                        <button data-id="${b.id}" data-type="captain-approve" class="text-sm font-medium text-green-400 hover:text-green-200 mr-2 transition duration-150">Approve</button>
+                        <button data-id="${b.id}" data-type="captain-reject" class="text-sm font-medium text-red-400 hover:text-red-200 transition duration-150">Reject</button>
+                    `;
+                } else if (viewerRole === 'Admin') {
+                    // Admin only views, no direct actions here
+                    actionButton = `<span class="text-gray-500 text-xs">View Only</span>`;
                 }
 
                 return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">${b.id.substring(0, 8)}</td>
-                        <td class="px-6 py-4 text-sm font-medium text-slate-900">${b.complainantName}</td>
-                        <td class="px-6 py-4 text-sm text-slate-600">${b.incidentType}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="status-badge ${getStatusColor(b.status)}">
+                    <tr class="hover:bg-gray-700/80 transition duration-150 border-t border-gray-700">
+                        <td class="p-3 text-sm font-medium text-indigo-300">${b.blotterId || b.id.substring(0, 8)}...</td>
+                        <td class="p-3 text-sm">${b.incidentType}</td>
+                        <td class="p-3 text-sm text-gray-400 truncate max-w-xs">${b.details.substring(0, 100)}...</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(b.status)}">
                                 ${b.status}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${b.dateReported.toLocaleDateString()}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${actionButton}</td>
+                        <td class="p-3 text-sm text-gray-500">${b.mediationDate || 'N/A'}</td>
+                        <td class="p-3 whitespace-nowrap">${actionButton}</td>
                     </tr>
                 `;
             }).join('');
-        }
 
-        // 3. Render Staff Action List
-        function renderStaffActionList() {
-            if (currentRole !== 'Barangay Staff/Secretary') return;
-            
-            const list = document.getElementById('staff-action-list');
-            const actionCases = blottersCache.filter(b => 
-                b.status === 'Pending' || 
-                b.status === 'Under Investigation' || 
-                b.status === 'Scheduled' ||
-                b.status === 'Needs Revision' // Staff needs to act on these too
-            );
-            
-            if (list.closest('.tab-content').classList.contains('hidden') && !actionCases.length) return; // Optimization
-
-            if (actionCases.length === 0) {
-                list.innerHTML = '<div class="p-4 text-center text-slate-500 bg-white rounded-xl border border-dashed border-emerald-300">No cases requiring immediate staff attention.</div>';
-                return;
-            }
-
-            list.innerHTML = actionCases.map(b => `
-                <div class="card p-4 border-l-4 border-indigo-500 bg-white shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <p class="font-semibold text-slate-800">${b.incidentType}</p>
-                        <span class="status-badge ${getStatusColor(b.status)}">${b.status}</span>
-                    </div>
-                    <p class="text-xs text-slate-500 mt-1 truncate">Complainant: ${b.complainantName}</p>
-                    <button onclick="openModal('${b.id}', 'staff')" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold mt-2">
-                        Take Action &rarr;
-                    </button>
+            return `
+                <div class="overflow-x-auto rounded-lg shadow-inner">
+                    <table class="min-w-full divide-y divide-gray-700 bg-gray-900/90">
+                        <thead class="bg-gray-700/90">
+                            <tr>
+                                <th class="p-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Case ID</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Type</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Details</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Schedule</th>
+                                <th class="p-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blotter-table-body" class="divide-y divide-gray-800">
+                            ${rows}
+                        </tbody>
+                    </table>
                 </div>
-            `).join('');
-        }
-
-        // 4. Render Captain Review List
-        function renderCaptainReviewList() {
-            if (currentRole !== 'Barangay Captain/Lupon') return;
-
-            const list = document.getElementById('captain-review-list');
-            const resolvedCases = blottersCache.filter(b => b.status === 'Resolved');
-            
-            if (list.closest('.tab-content').classList.contains('hidden') && !resolvedCases.length) return; // Optimization
-
-            if (resolvedCases.length === 0) {
-                list.innerHTML = '<div class="p-6 text-center text-slate-500 card border-2 border-dashed border-emerald-300">No cases currently awaiting final approval.</div>';
-                return;
-            }
-
-            list.innerHTML = resolvedCases.map(b => `
-                <div class="card p-5 border-l-4 border-red-500 bg-white shadow-md">
-                    <p class="font-bold text-lg text-slate-800">${b.incidentType}</p>
-                    <p class="text-sm text-slate-600 mt-1">Status: <span class="text-red-500 font-semibold">Awaiting Approval</span></p>
-                    <p class="text-sm text-slate-500 mt-2 italic">Resolution Summary: ${b.resolution ? b.resolution.substring(0, 80) + '...' : 'N/A'}</p>
-                    <button onclick="openModal('${b.id}', 'captain')" class="btn-primary bg-red-600 hover:bg-red-700 text-xs mt-3 py-2 px-4">
-                        Review & Decide
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        // 5. Render Statistics (Captain/Admin)
-        function renderStatistics() {
-            if (currentRole !== 'Barangay Captain/Lupon' && currentRole !== 'System Administrator') return;
-            
-            const total = blottersCache.length;
-            const approved = blottersCache.filter(b => b.status === 'Approved').length;
-            const resolved = blottersCache.filter(b => b.status === 'Resolved').length;
-            const pending = total - approved - resolved; // Includes Pending, Inv, Scheduled, Needs Revision
-
-            document.getElementById('stat-total').textContent = total;
-            document.getElementById('stat-resolved').textContent = approved;
-            document.getElementById('stat-pending').textContent = pending;
-        }
-
-
-        // --- FIREBASE WRITE OPERATIONS ---
-
-        // Citizen and Staff Form Submission
-        async function submitBlotter(data, formEl) {
-            const isStaff = data.isStaff;
-            const messageEl = isStaff ? document.getElementById('staff-message') : document.getElementById('citizen-message');
-            
-            messageEl.classList.add('hidden'); // Hide message initially
-            
-            try {
-                const blotterRef = getBlotterCollectionRef();
-                
-                await addDoc(blotterRef, {
-                    ...data,
-                    dateReported: serverTimestamp(),
-                    reporterId: currentUserId,
-                    status: 'Pending',
-                    resolution: null,
-                    schedule: null
-                });
-
-                messageEl.textContent = `✅ Report submitted successfully! Tracking ID: ${currentUserId.substring(0, 5)}...`;
-                messageEl.classList.remove('hidden');
-                messageEl.className = 'mt-4 p-3 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800';
-
-                // Clear form
-                formEl.reset();
-
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                messageEl.textContent = `❌ Error submitting report: ${e.message}`;
-                messageEl.classList.remove('hidden');
-                messageEl.className = 'mt-4 p-3 rounded-lg text-sm font-medium bg-red-100 text-red-800';
-            }
-        }
+            `;
+        };
         
-        window.handleBlotterSubmission = (event) => {
-            event.preventDefault();
-            const formEl = document.getElementById('blotter-form');
-            const data = {
-                complainantName: document.getElementById('c_name').value,
-                contact: document.getElementById('c_contact').value,
-                incidentType: document.getElementById('c_type').value,
-                dateOfIncident: document.getElementById('c_date').value,
-                description: document.getElementById('c_description').value,
-                isStaff: false
-            };
-            submitBlotter(data, formEl);
-        };
+        // --- Event Listeners for Dynamic Actions ---
 
-        window.handleStaffBlotterSubmission = (event) => {
-            event.preventDefault();
-            const formEl = document.getElementById('staff-blotter-form');
-            const data = {
-                complainantName: document.getElementById('s_c_name').value,
-                contact: document.getElementById('s_c_contact').value,
-                incidentType: document.getElementById('s_c_type').value,
-                dateOfIncident: new Date().toISOString().split('T')[0], // Use today's date for walk-in
-                description: document.getElementById('s_c_description').value,
-                isStaff: true,
-                recordedBy: currentUserId
-            };
-            submitBlotter(data, formEl);
-        };
-
-        // --- MODAL AND STATUS/RESOLUTION UPDATE LOGIC ---
-        const actionModal = document.getElementById('action-modal');
-        const modalForm = document.getElementById('modal-form');
-
-        window.openModal = (blotterId, actorRole) => {
-            const blotter = blottersCache.find(b => b.id === blotterId);
-            if (!blotter) {
-                console.error("Blotter not found:", blotterId);
-                return;
-            }
-
-            document.getElementById('modal-blotter-id').value = blotterId;
-            document.getElementById('modal-error').classList.add('hidden');
-
-            // Reset fields
-            document.getElementById('modal-status').value = blotter.status === 'Approved' ? 'Under Investigation' : blotter.status; // Default staff status
-            document.getElementById('modal-schedule').value = blotter.schedule || '';
-            document.getElementById('modal-resolution').value = blotter.resolution || '';
-            document.getElementById('modal-approval').value = '';
-            
-            // Hide/Show fields for staff/captain
-            const statusField = document.getElementById('status-field');
-            const scheduleField = document.getElementById('schedule-field');
-            const resolutionField = document.getElementById('resolution-field');
-            const approvalField = document.getElementById('approval-field');
-            
-            statusField.classList.add('hidden');
-            scheduleField.classList.add('hidden');
-            resolutionField.classList.add('hidden');
-            approvalField.classList.add('hidden');
-            document.getElementById('modal-resolution').readOnly = false;
-
-
-            // Set up modal based on actor role
-            if (actorRole === 'staff') {
-                document.getElementById('modal-title').textContent = `Actioning Case: ${blotter.incidentType}`;
-                document.getElementById('modal-submit-btn').textContent = 'Save Updates';
-                statusField.classList.remove('hidden');
-                document.getElementById('modal-status').onchange = (e) => toggleStaffFields(e.target.value);
-                // Initial call to set fields
-                toggleStaffFields(document.getElementById('modal-status').value);
-            } else if (actorRole === 'captain') {
-                document.getElementById('modal-title').textContent = `Reviewing Resolution for: ${blotter.incidentType}`;
-                document.getElementById('modal-submit-btn').textContent = 'Submit Decision';
-                approvalField.classList.remove('hidden');
-                resolutionField.classList.remove('hidden'); // Show existing resolution
-                document.getElementById('modal-resolution').readOnly = true;
-            }
-            
-            actionModal.classList.remove('hidden');
-            actionModal.classList.add('flex');
-        };
-
-        function toggleStaffFields(status) {
-            const scheduleField = document.getElementById('schedule-field');
-            const resolutionField = document.getElementById('resolution-field');
-
-            scheduleField.classList.add('hidden');
-            resolutionField.classList.add('hidden');
-            
-            // Require certain fields based on status
-            document.getElementById('modal-schedule').required = false;
-            document.getElementById('modal-resolution').required = false;
-
-            if (status === 'Scheduled') {
-                scheduleField.classList.remove('hidden');
-                document.getElementById('modal-schedule').required = true;
-            } else if (status === 'Resolved') {
-                resolutionField.classList.remove('hidden');
-                document.getElementById('modal-resolution').required = true;
-            }
-        }
-
-        window.closeModal = () => {
-            actionModal.classList.add('hidden');
-            actionModal.classList.remove('flex');
-        };
-
-        window.handleModalAction = async (event) => {
-            event.preventDefault();
-            const blotterId = document.getElementById('modal-blotter-id').value;
-            const blotterRef = doc(getBlotterCollectionRef(), blotterId);
-            const updates = {};
-            const errorEl = document.getElementById('modal-error');
-            errorEl.classList.add('hidden');
-
-            try {
-                if (currentRole === 'Barangay Staff/Secretary') {
-                    const status = document.getElementById('modal-status').value;
-                    updates.status = status;
-                    updates.updatedBy = currentUserId;
-                    updates.lastUpdate = serverTimestamp();
-
-                    if (status === 'Scheduled') {
-                        const schedule = document.getElementById('modal-schedule').value;
-                        if (!schedule) throw new Error("Schedule date/time is required.");
-                        updates.schedule = schedule;
-                        updates.resolution = null; 
-                    } else if (status === 'Resolved') {
-                        const resolution = document.getElementById('modal-resolution').value;
-                        if (!resolution) throw new Error("Resolution details are required for resolved cases.");
-                        updates.resolution = resolution;
-                        updates.schedule = null;
-                    } else {
-                        updates.schedule = null;
-                        updates.resolution = null;
-                    }
-                    
-                } else if (currentRole === 'Barangay Captain/Lupon') {
-                    const approval = document.getElementById('modal-approval').value;
-                    if (!approval) throw new Error("An approval decision is required.");
-
-                    updates.status = approval; // Will be 'Approved' or 'Needs Revision'
-                    updates.approvedBy = currentUserId;
-                    updates.approvalDate = serverTimestamp();
-                }
-
-                await updateDoc(blotterRef, updates);
-                closeModal();
-
-            } catch (error) {
-                console.error("Error updating blotter:", error);
-                errorEl.textContent = `Action failed: ${error.message}`;
-                errorEl.classList.remove('hidden');
-            }
-        };
-
-
-        // --- UI/NAVIGATION LOGIC ---
-
-        const roleTabs = {
-            'Complainant/Citizen': [
-                { id: 'citizen-submit-report', name: 'Submit Report' },
-                { id: 'citizen-track-status', name: 'Track Status' }
-            ],
-            'Barangay Staff/Secretary': [
-                { id: 'staff-dashboard', name: 'Staff Dashboard' },
-                { id: 'view-records', name: 'View/Manage Records' }
-            ],
-            'Barangay Captain/Lupon': [
-                { id: 'captain-dashboard', name: 'Captain Dashboard' },
-                { id: 'view-records', name: 'Search & View Records' }
-            ],
-            'System Administrator': [
-                { id: 'admin-dashboard', name: 'Admin Dashboard' },
-                { id: 'view-records', name: 'Search & View Records' }
-            ]
-        };
-
-        function setupNavigation(role) {
-            const tabs = roleTabs[role];
-            const navEl = document.getElementById('nav-tabs');
-            navEl.innerHTML = ''; 
-
-            if (!tabs) return;
-
-            tabs.forEach((tab, index) => {
-                const button = document.createElement('button');
-                button.textContent = tab.name;
-                button.className = `nav-button px-5 py-3 text-sm font-medium transition-colors duration-200 ease-in-out text-slate-500 hover:text-emerald-600 border-b-2 border-transparent`;
-                button.onclick = () => showTab(tab.id, button);
-                navEl.appendChild(button);
+        const attachModalEventListeners = () => {
+            document.querySelectorAll('[data-type="staff-update"]').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    showStaffUpdateModal(id);
+                });
             });
 
-            // Automatically show the first tab and highlight its button
-            const firstButton = navEl.querySelector('button');
-            if (firstButton) {
-                 showTab(tabs[0].id, firstButton);
-            }
-        }
-
-        function showTab(tabId, clickedButton) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            
-            // Reset all tab buttons styling
-            document.querySelectorAll('#nav-tabs button').forEach(el => {
-                el.classList.remove('active', 'border-emerald-500', 'text-emerald-600');
-                el.classList.add('text-slate-500');
+            document.querySelectorAll('[data-type="captain-approve"]').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    showCaptainDecisionModal(id, 'Approve');
+                });
             });
 
-            // Show the selected content
-            const contentEl = document.getElementById(tabId);
-            if (contentEl) {
-                contentEl.classList.remove('hidden');
+            document.querySelectorAll('[data-type="captain-reject"]').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    showCaptainDecisionModal(id, 'Close'); // Rejecting closes the case
+                });
+            });
+        };
+
+        const showStaffUpdateModal = (blotterId) => {
+            blotterToUpdateId = blotterId;
+            const blotter = allBlotters.find(b => b.id === blotterId);
+
+            const modalBody = `
+                <p class="mb-4 text-gray-400">Update status for Case ID: <strong>${blotter.blotterId || blotter.id}</strong></p>
+                <div class="space-y-3">
+                    <div>
+                        <label for="modal-status" class="block text-sm font-medium text-gray-300">New Status</label>
+                        <select id="modal-status" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                            <option value="Filed">Filed</option>
+                            <option value="Review">Under Review</option>
+                            <option value="Scheduled">Scheduled Conciliation/Mediation</option>
+                            <option value="Decision Ready">Ready for Captain Review</option>
+                            <option value="Closed">Closed (Resolved/Withdrawn)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="modal-date" class="block text-sm font-medium text-gray-300">Mediation/Conciliation Date (Optional)</label>
+                        <input type="datetime-local" id="modal-date" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                    </div>
+                    <div>
+                        <label for="modal-remarks" class="block text-sm font-medium text-gray-300">Staff Remarks</label>
+                        <textarea id="modal-remarks" rows="2" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white" placeholder="Add notes on the update..."></textarea>
+                    </div>
+                </div>
+            `;
+            
+            showModal('Update Case Details', modalBody, true, () => {
+                const newStatus = document.getElementById('modal-status').value;
+                const date = document.getElementById('modal-date').value;
+                const remarks = document.getElementById('modal-remarks').value;
                 
-                // Highlight the active button
-                if (clickedButton) {
-                    clickedButton.classList.add('active', 'border-emerald-500', 'text-emerald-600', 'font-bold');
-                    clickedButton.classList.remove('text-slate-500');
-                }
+                updateBlotterStatus(blotterToUpdateId, newStatus, date, remarks);
+                blotterToUpdateId = null; // Clear ID after use
+            });
+        };
 
-                // Special refresh for table view
-                if (tabId === 'view-records') {
-                    renderBlotterTable();
-                }
-            }
-        }
+        const showCaptainDecisionModal = (blotterId, action) => {
+            blotterToUpdateId = blotterId;
+            const blotter = allBlotters.find(b => b.id === blotterId);
+            const statusText = action === 'Approve' ? 'APPROVAL' : 'REJECTION (Case Closure)';
+
+            const modalBody = `
+                <p class="mb-4 text-gray-400">Confirm **${statusText}** for Case ID: <strong>${blotter.blotterId || blotter.id}</strong></p>
+                <p class="mb-4 text-sm text-red-300">This action is final and will set the case status to **${action}**.</p>
+                <div>
+                    <label for="captain-remarks" class="block text-sm font-medium text-gray-300">Captain's Decision Notes</label>
+                    <textarea id="captain-remarks" rows="2" class="w-full p-2 bg-gray-700 border border-gray-600 rounded-lg text-white" placeholder="Reason for decision..."></textarea>
+                </div>
+            `;
+            
+            showModal(`Final Decision: ${action}`, modalBody, true, () => {
+                const remarks = document.getElementById('captain-remarks').value;
+                
+                updateBlotterStatus(blotterToUpdateId, action, null, remarks);
+                blotterToUpdateId = null; // Clear ID after use
+            });
+        };
+
+        // Initialize view on load
+        document.addEventListener('DOMContentLoaded', () => {
+            // This ensures the initial view is rendered once Firebase Auth is ready
+            // The actual render is triggered by the onAuthStateChanged in the module script
+            // For now, set the default selection
+            document.getElementById('role-select').value = 'Citizen'; 
+        });
 
     </script>
 </body>
