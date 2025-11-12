@@ -3,797 +3,949 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter: Digital Incident & Complaint Reporting System</title>
-    <!-- Load Tailwind CSS -->
+    <title>Barangay eBlotter System | 2025 Theme</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Inter Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb;
+        /* Modern, subtle background */
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; /* Slate-100 */ }
+        
+        /* Elevated, highly rounded card style */
+        .card { 
+            background-color: white; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Deeper shadow */
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        /* Custom scrollbar for chat window */
-        .chat-window::-webkit-scrollbar {
-            width: 8px;
+        .card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
-        .chat-window::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
+
+        /* Primary Button: Emerald/Green Focus */
+        .btn-primary { 
+            background-color: #059669; /* Emerald-600 */
+            color: white; 
+            padding: 12px 24px; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            transition: all 0.2s; 
+            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.4);
+        }
+        .btn-primary:hover { 
+            background-color: #047857; /* Emerald-700 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(5, 150, 105, 0.5);
+        }
+
+        /* Secondary/Neutral Button */
+        .btn-secondary { 
+            background-color: #e2e8f0; /* Slate-200 */
+            color: #1e293b; /* Slate-800 */
+            padding: 12px 24px; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            transition: background-color 0.2s; 
+        }
+        .btn-secondary:hover { 
+            background-color: #cbd5e1; /* Slate-300 */
+        }
+
+        /* Modern Form Inputs with Focus Ring */
+        input:not([type="submit"]):not([type="button"]), textarea, select {
+            border: 1px solid #cbd5e1; /* Slate-300 */
             border-radius: 10px;
+            padding: 10px 14px;
+            transition: all 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #059669; /* Emerald-600 */
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+            outline: none;
+        }
+
+        /* Status colors refinement */
+        .status-badge {
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 9999px; /* Pill shape */
+            font-size: 0.75rem;
+        }
+        .status-Pending { background-color: #fee2e2; color: #dc2626; } /* Red */
+        .status-UnderInvestigation { background-color: #fef3c7; color: #d97706; } /* Amber */
+        .status-Scheduled { background-color: #dbeafe; color: #2563eb; } /* Blue */
+        .status-Resolved { background-color: #d1fae5; color: #059669; } /* Emerald */
+        .status-Approved { background-color: #a7f3d0; color: #065f46; } /* Light Emerald */
+        .status-NeedsRevision { background-color: #fbcfe8; color: #db2777; } /* Pink */
+
+        /* Custom scrollbar for better look */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
+
+        /* Navigation Tab Style */
+        .nav-button.active {
+            border-color: #059669;
+            color: #059669;
+            font-weight: 700;
         }
     </style>
 </head>
-<body>
+<body class="p-4 md:p-10 min-h-screen">
 
-<div id="app" class="min-h-screen flex flex-col">
+    <div id="loader" class="fixed inset-0 bg-white bg-opacity-80 flex flex-col justify-center items-center z-50 hidden">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-emerald-500"></div>
+        <p class="ml-4 mt-4 text-emerald-600 font-semibold text-lg">Initializing Secure System...</p>
+    </div>
+
     <!-- Header -->
-    <header class="bg-blue-800 text-white shadow-lg p-4 sticky top-0 z-10">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl md:text-2xl font-bold">Barangay eBlotter</h1>
-            <div id="auth-status" class="flex items-center space-x-4 text-sm">
-                <p id="user-info" class="truncate hidden md:block"></p>
-                <button id="logout-btn" onclick="logout()" class="hidden bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-full shadow-md transition duration-200">Logout</button>
+    <header class="mb-10 p-5 bg-white card sticky top-0 z-20">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-800">eBlotter Management</h1>
+                <p class="text-sm text-slate-500 mt-1">Barangay Public Service Portal</p>
+            </div>
+            <div id="auth-info" class="text-xs mt-3 md:mt-0 text-slate-600 flex flex-wrap items-center bg-slate-50 p-3 rounded-xl">
+                <span id="current-role" class="font-bold text-emerald-600 mr-4"></span>
+                <span id="current-user-id" class="break-all text-sm"></span>
+                <button onclick="logout()" class="ml-4 text-red-500 hover:text-red-700 font-bold text-sm underline-offset-4 hover:underline">Change Role</button>
             </div>
         </div>
     </header>
 
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="absolute inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-20">
-        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-3"></div>
-        <p class="text-blue-700 font-medium">Initializing System & Secure Connection...</p>
+    <!-- Role Selection View (Initial Screen) -->
+    <div id="role-selector" class="max-w-xl mx-auto card p-10 my-16">
+        <h2 class="text-3xl font-bold mb-8 text-slate-700 text-center">Welcome. Please Identify Yourself.</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <button onclick="selectRole('Complainant/Citizen')" class="btn-secondary text-center hover:bg-emerald-100 hover:text-emerald-800 flex flex-col items-center p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mb-2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Citizen
+            </button>
+            <button onclick="selectRole('Barangay Staff/Secretary')" class="btn-secondary text-center hover:bg-emerald-100 hover:text-emerald-800 flex flex-col items-center p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mb-2"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                Staff
+            </button>
+            <button onclick="selectRole('Barangay Captain/Lupon')" class="btn-secondary text-center hover:bg-emerald-100 hover:text-emerald-800 flex flex-col items-center p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mb-2"><path d="m8 3 4 8 5-5 5 5L12 22 4 12 8 3z"/></svg>
+                Captain
+            </button>
+            <button onclick="selectRole('System Administrator')" class="btn-secondary text-center hover:bg-emerald-100 hover:text-emerald-800 flex flex-col items-center p-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 mb-2"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 14v-4"/><path d="M12 8h.01"/></svg>
+                Admin
+            </button>
+        </div>
+        <p class="text-sm text-slate-500 mt-6 italic text-center">This simulates role-based access control for system testing.</p>
     </div>
 
-    <!-- Main Content Area -->
-    <main class="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full">
-        <!-- Role Selection -->
-        <div id="role-selection" class="flex flex-col items-center justify-center h-full text-center space-y-8 py-20">
-            <h2 class="text-3xl font-extrabold text-gray-800">Welcome to Barangay eBlotter</h2>
-            <p class="text-lg text-gray-600 max-w-2xl">A secure, digital system for incident reporting and management.</p>
-            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-8">
-                <button onclick="setView('staff')" class="px-8 py-4 bg-blue-600 text-white text-lg font-semibold rounded-xl shadow-lg hover:bg-blue-700 transition duration-300 transform hover:scale-105">
-                    Barangay Staff / Admin Portal
-                </button>
-                <button onclick="setView('resident')" class="px-8 py-4 bg-gray-200 text-gray-800 text-lg font-semibold rounded-xl shadow-lg hover:bg-gray-300 transition duration-300 transform hover:scale-105">
-                    Resident / Public Complaint Chatbot
-                </button>
-            </div>
-            <p class="text-xs text-gray-500 mt-6">Logged in as: <span id="current-user-id"></span></p>
-        </div>
+    <!-- Main Application Content (Hidden until role is selected) -->
+    <main id="app-content" class="hidden max-w-7xl mx-auto">
+        
+        <!-- Navigation Tabs -->
+        <nav class="flex space-x-4 border-b-2 border-slate-200 mb-8" id="nav-tabs"></nav>
 
-        <!-- Staff Dashboard View -->
-        <div id="staff-dashboard" class="hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">Staff Administrative Dashboard</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Data Card: Total Cases -->
-                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-blue-500">
-                    <p class="text-sm font-medium text-gray-500">Total Blotter Entries</p>
-                    <p id="total-cases-count" class="text-3xl font-extrabold text-gray-900 mt-1">0</p>
-                </div>
-                <!-- Data Card: Pending Cases -->
-                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-yellow-500">
-                    <p class="text-sm font-medium text-gray-500">Pending Cases</p>
-                    <p id="pending-cases-count" class="text-3xl font-extrabold text-yellow-600 mt-1">0</p>
-                </div>
-                <!-- Data Card: Resolved Cases -->
-                <div class="bg-white p-6 rounded-xl shadow-md border-t-4 border-green-500">
-                    <p class="text-sm font-medium text-gray-500">Resolved Cases</p>
-                    <p id="resolved-cases-count" class="text-3xl font-extrabold text-green-600 mt-1">0</p>
-                </div>
-            </div>
+        <!-- Dynamic Content Area -->
+        <div id="dashboard-content">
 
-            <!-- AI Analytics Simulation & Report Generation -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <!-- AI Analytics Simulation -->
-                <div class="bg-white p-6 rounded-xl shadow-md">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                        </svg>
-                        AI-Driven Insights (Top Incident Types)
-                    </h3>
-                    <ul id="top-incidents-list" class="space-y-2 text-gray-700">
-                        <li class="text-sm text-gray-500">Data will appear here after blotters are added.</li>
-                    </ul>
-                </div>
-
-                <!-- New Blotter Entry / Report Generation -->
-                <div class="bg-white p-6 rounded-xl shadow-md flex flex-col space-y-4">
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Actions</h3>
-                    <button onclick="document.getElementById('new-blotter-modal').classList.remove('hidden')" class="w-full py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 transition duration-300">
-                        + Record New Blotter Entry
-                    </button>
-                    <button onclick="generateReport()" class="w-full py-3 bg-indigo-500 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-600 transition duration-300">
-                        Generate Monthly/Annual Report (PDF)
-                    </button>
-                    <button onclick="setView('resident')" class="w-full py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 transition duration-300">
-                        Go to Public Portal
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Case Management Table -->
-            <div class="bg-white p-6 rounded-xl shadow-lg overflow-x-auto">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4">Case Management (All Blotter Records)</h3>
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Incident Type</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Complainant</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="blotter-table-body" class="bg-white divide-y divide-gray-200">
-                        <!-- Blotter data will be injected here -->
-                    </tbody>
-                </table>
-                <p id="no-blotters-msg" class="text-center py-4 text-gray-500 hidden">No blotter entries found.</p>
-            </div>
-
-        </div> <!-- End Staff Dashboard -->
-
-        <!-- Resident Chatbot View -->
-        <div id="resident-portal" class="hidden h-[75vh]">
-            <div class="flex flex-col h-full bg-white rounded-xl shadow-2xl border border-gray-100">
-                <div class="p-4 bg-blue-100 border-b border-blue-200 rounded-t-xl">
-                    <h3 class="text-xl font-bold text-blue-800">Barangay eBlotter Chatbot Service</h3>
-                    <p class="text-sm text-blue-600">Ask me to **"File a complaint"** or **"Check a case status"**.</p>
-                </div>
-                
-                <!-- Chat Window -->
-                <div id="chat-window" class="flex-grow p-4 overflow-y-auto space-y-4 chat-window">
-                    <!-- Initial Bot Message -->
-                    <div class="flex justify-start">
-                        <div class="bg-blue-500 text-white p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl max-w-xs md:max-w-md shadow-md">
-                            Hello! I am your Barangay eBlotter Assistant. I can help you **File a complaint** or **Check a case status**. How may I assist you today?
-                        </div>
+            <!-- CITIZEN VIEW -->
+            <div id="citizen-submit-report" class="tab-content card p-8 mb-8">
+                <h2 class="text-2xl font-bold mb-6 text-emerald-700">Submit Online Blotter Report</h2>
+                <form id="blotter-form" onsubmit="handleBlotterSubmission(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="text" id="c_name" placeholder="Your Full Name (Complainant)" required class="w-full">
+                        <input type="email" id="c_contact" placeholder="Contact Email/Number" required class="w-full">
+                        <input type="text" id="c_type" placeholder="Incident Type (e.g., Theft, Dispute, Violation)" required class="w-full">
+                        <input type="date" id="c_date" placeholder="Date of Incident" required class="w-full">
                     </div>
-                </div>
-
-                <!-- Input Area -->
-                <div class="p-4 border-t border-gray-200 flex space-x-3">
-                    <input type="text" id="chat-input" placeholder="Type your message here..." class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" onkeydown="if(event.key === 'Enter') sendChat()">
-                    <button id="chat-send-btn" onclick="sendChat()" class="bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                        Send
-                    </button>
-                    <button id="chat-loading-btn" disabled class="hidden bg-blue-400 text-white px-5 py-3 rounded-lg font-semibold flex items-center">
-                        <div class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                        Sending...
-                    </button>
-                </div>
-            </div>
-            <div class="mt-4 text-sm text-gray-500 text-center">
-                <button onclick="setView('staff')" class="text-blue-600 hover:underline">Switch back to Staff Dashboard</button>
-            </div>
-        </div> <!-- End Resident Portal -->
-
-        <!-- Custom Modal for Blotter Details / Update -->
-        <div id="update-case-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="if(event.target.id === 'update-case-modal') document.getElementById('update-case-modal').classList.add('hidden')">
-            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg">
-                <h3 class="text-2xl font-bold mb-4 text-gray-800">Update Case: <span id="modal-blotter-id"></span></h3>
-                <div id="modal-details" class="space-y-3 mb-6 p-4 bg-gray-50 rounded-lg text-sm">
-                    <!-- Case details populated here -->
-                </div>
-                <div class="mb-4">
-                    <label for="new-status" class="block text-sm font-medium text-gray-700 mb-1">Update Status:</label>
-                    <select id="new-status" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="Pending">Pending</option>
-                        <option value="Ongoing">Ongoing (Under Mediation)</option>
-                        <option value="Resolved">Resolved</option>
-                    </select>
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button onclick="document.getElementById('update-case-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition">Cancel</button>
-                    <button onclick="updateBlotterStatus()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">Save Update</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Custom Modal for New Blotter Entry -->
-        <div id="new-blotter-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center p-4" onclick="if(event.target.id === 'new-blotter-modal') document.getElementById('new-blotter-modal').classList.add('hidden')">
-            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-2xl">
-                <h3 class="text-2xl font-bold mb-4 text-gray-800">Record New Blotter Entry</h3>
-                <form id="new-blotter-form" onsubmit="event.preventDefault(); recordNewBlotter()">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="complainant-name" class="block text-sm font-medium text-gray-700 mb-1">Complainant Name</label>
-                            <input type="text" id="complainant-name" required class="w-full p-2 border border-gray-300 rounded-lg">
-                        </div>
-                        <div>
-                            <label for="incident-type" class="block text-sm font-medium text-gray-700 mb-1">Incident Type</label>
-                            <select id="incident-type" required class="w-full p-2 border border-gray-300 rounded-lg">
-                                <option value="" disabled selected>Select Incident Type</option>
-                                <option value="Theft">Theft/Robbery</option>
-                                <option value="Physical Dispute">Physical Dispute</option>
-                                <option value="Noise Complaint">Noise Complaint</option>
-                                <option value="Boundary Dispute">Boundary Dispute</option>
-                                <option value="Domestic Issue">Domestic Issue</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label for="narrative" class="block text-sm font-medium text-gray-700 mb-1">Incident Narrative (Details)</label>
-                            <textarea id="narrative" rows="4" required class="w-full p-2 border border-gray-300 rounded-lg"></textarea>
-                        </div>
-                    </div>
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" onclick="document.getElementById('new-blotter-modal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg hover:bg-gray-400 transition">Cancel</button>
-                        <button type="submit" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition">Record Blotter</button>
-                    </div>
+                    <textarea id="c_description" rows="5" placeholder="Detailed Description of the Incident (Be accurate and specific)" required class="w-full mt-6"></textarea>
+                    <button type="submit" class="btn-primary mt-6">Submit Report Securely</button>
+                    <div id="citizen-message" class="mt-4 p-3 rounded-lg text-sm font-medium hidden"></div>
                 </form>
             </div>
+
+            <div id="citizen-track-status" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6 text-emerald-700">Your Submitted Reports</h2>
+                <div id="citizen-report-list" class="space-y-6">
+                    <!-- Citizen's specific reports will load here -->
+                    <div class="p-6 text-center text-slate-500 card">Loading your reports...</div>
+                </div>
+            </div>
+
+            <!-- STAFF/ADMIN/CAPTAIN SHARED VIEWS -->
+            <div id="view-records" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6 text-emerald-700">Blotter Records List</h2>
+                <div class="card p-4 mb-6 flex flex-wrap items-center justify-between bg-white border border-slate-200">
+                    <div class="text-sm font-medium text-slate-700 mb-2 md:mb-0">Filter Records:</div>
+                    <select id="status-filter" onchange="filterRecords(this.value)" class="p-2 border border-slate-300 rounded-lg text-sm">
+                        <option value="all">All Records</option>
+                        <option value="Pending">Pending (New)</option>
+                        <option value="Under Investigation">Under Investigation</option>
+                        <option value="Scheduled">Scheduled (Hearing)</option>
+                        <option value="Resolved">Resolved (Pending Captain Approval)</option>
+                        <option value="Approved">Approved (Closed)</option>
+                        <option value="Needs Revision">Needs Revision</option>
+                    </select>
+                </div>
+                <div id="blotter-table-container" class="overflow-x-auto card p-6 custom-scrollbar">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider rounded-tl-xl">ID</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Complainant</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Incident Type</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Reported On</th>
+                                <th id="table-actions-header" class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider rounded-tr-xl">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blotter-records-body" class="bg-white divide-y divide-slate-100">
+                            <tr><td colspan="6" class="p-6 text-center text-slate-500">Loading records...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- STAFF SPECIFIC VIEWS -->
+            <div id="staff-dashboard" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Record New Blotter Incident (Walk-in) -->
+                    <div class="card p-8 lg:col-span-2">
+                        <h2 class="text-2xl font-bold mb-6 text-emerald-700">New Walk-in Blotter Record</h2>
+                        <form id="staff-blotter-form" onsubmit="handleStaffBlotterSubmission(event)">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input type="text" id="s_c_name" placeholder="Complainant Name" required class="w-full">
+                                <input type="text" id="s_c_contact" placeholder="Contact Info" required class="w-full">
+                            </div>
+                            <input type="text" id="s_c_type" placeholder="Incident Type" required class="w-full mt-4">
+                            <textarea id="s_c_description" rows="4" placeholder="Detailed Description" required class="w-full mt-4"></textarea>
+                            <button type="submit" class="btn-primary mt-6">Securely Record Incident</button>
+                            <div id="staff-message" class="mt-4 p-3 rounded-lg text-sm font-medium hidden"></div>
+                        </form>
+                    </div>
+
+                    <!-- Cases needing Action -->
+                    <div class="card p-6 bg-slate-50 border border-slate-200">
+                        <h2 class="text-xl font-bold mb-4 text-red-600">Cases Needing Immediate Action</h2>
+                        <div id="staff-action-list" class="space-y-3 custom-scrollbar max-h-96 overflow-y-auto">
+                            <!-- List of Pending/Under Investigation cases -->
+                            <div class="p-3 text-center text-slate-500 bg-white rounded-xl">No critical cases pending.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CAPTAIN SPECIFIC VIEWS -->
+            <div id="captain-dashboard" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6 text-emerald-700">Management Overview & Analytics</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <!-- Statistical Reports -->
+                    <div class="card p-6 text-center bg-blue-50 border border-blue-200">
+                        <p class="text-5xl font-extrabold text-blue-600" id="stat-total">0</p>
+                        <p class="text-sm font-medium text-slate-600 mt-2">Total Blotter Reports</p>
+                    </div>
+                    <div class="card p-6 text-center bg-emerald-50 border border-emerald-200">
+                        <p class="text-5xl font-extrabold text-emerald-600" id="stat-resolved">0</p>
+                        <p class="text-sm font-medium text-slate-600 mt-2">Resolved & Approved Cases</p>
+                    </div>
+                    <div class="card p-6 text-center bg-red-50 border border-red-200">
+                        <p class="text-5xl font-extrabold text-red-600" id="stat-pending">0</p>
+                        <p class="text-sm font-medium text-slate-600 mt-2">Pending/Active Cases</p>
+                    </div>
+                </div>
+                
+                <h2 class="text-2xl font-bold mb-6 text-red-700">Resolution Approval Queue</h2>
+                <div id="captain-review-list" class="space-y-4 custom-scrollbar max-h-96 overflow-y-auto">
+                    <!-- List of Resolved cases for Captain approval -->
+                    <div class="p-6 text-center text-slate-500 card">No cases currently awaiting final approval.</div>
+                </div>
+            </div>
+
+            <!-- ADMIN SPECIFIC VIEWS -->
+            <div id="admin-dashboard" class="tab-content hidden">
+                <h2 class="text-2xl font-bold mb-6 text-emerald-700">System Administration & Configuration</h2>
+                
+                <!-- Manage User Accounts (Mocked) -->
+                <div class="card p-8 mb-6">
+                    <h3 class="text-xl font-bold mb-4 border-b pb-2 text-slate-700">User Role Management (Mock)</h3>
+                    <p class="text-sm text-slate-600 mb-6">In a live system, this dashboard would control user privileges and account status. Current simulation roles:</p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <span class="p-3 bg-blue-50 text-blue-700 font-medium rounded-xl text-center">Admin</span>
+                        <span class="p-3 bg-red-50 text-red-700 font-medium rounded-xl text-center">Captain/Lupon</span>
+                        <span class="p-3 bg-yellow-50 text-yellow-700 font-medium rounded-xl text-center">Staff/Secretary</span>
+                        <span class="p-3 bg-emerald-50 text-emerald-700 font-medium rounded-xl text-center">Citizen</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MODAL for Status/Resolution Update (Used by Staff & Captain) -->
+            <div id="action-modal" class="fixed inset-0 bg-slate-900 bg-opacity-70 flex items-center justify-center z-50 transition-opacity duration-300 hidden">
+                <div class="card w-full max-w-lg p-8 m-4 animate-in fade-in zoom-in" style="--tw-animate-duration: 300ms;">
+                    <h3 id="modal-title" class="text-2xl font-bold mb-4 text-slate-800">Update Blotter Status</h3>
+                    <form id="modal-form" onsubmit="handleModalAction(event)">
+                        <input type="hidden" id="modal-blotter-id">
+                        
+                        <div id="status-field" class="mb-5">
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Update Status</label>
+                            <select id="modal-status" class="w-full" required>
+                                <option value="Under Investigation">Under Investigation</option>
+                                <option value="Scheduled">Scheduled Conciliation/Mediation</option>
+                                <option value="Resolved">Resolved</option>
+                                <option value="Needs Revision">Send Back for Revision</option>
+                            </select>
+                        </div>
+                        
+                        <div id="schedule-field" class="mb-5 hidden">
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Schedule Date & Time</label>
+                            <input type="datetime-local" id="modal-schedule" class="w-full">
+                        </div>
+                        
+                        <div id="resolution-field" class="mb-5 hidden">
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Case Resolution/Outcome</label>
+                            <textarea id="modal-resolution" rows="4" placeholder="Enter final resolution details here..." class="w-full"></textarea>
+                        </div>
+                        
+                        <div id="approval-field" class="mb-5 hidden">
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Captain's Decision</label>
+                            <select id="modal-approval" class="w-full" required>
+                                <option value="">Select Action</option>
+                                <option value="Approved">Approve Resolution (Close Case)</option>
+                                <option value="Needs Revision">Send Back to Staff for Revision</option>
+                            </select>
+                        </div>
+
+                        <div class="flex justify-end space-x-4 pt-4">
+                            <button type="button" onclick="closeModal()" class="btn-secondary">Cancel</button>
+                            <button type="submit" id="modal-submit-btn" class="btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                    <div id="modal-error" class="mt-3 text-sm text-red-500 font-medium hidden"></div>
+                </div>
+            </div>
+
         </div>
-
-
     </main>
 
-    <!-- Global Message Box (used instead of alert/confirm) -->
-    <div id="message-box" class="fixed bottom-4 right-4 z-50 transition-transform duration-300 transform translate-x-full">
-        <div class="bg-green-600 text-white p-4 rounded-lg shadow-xl flex items-center space-x-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span id="message-text"></span>
-        </div>
-    </div>
-</div>
-
-<!-- Firebase and JS SDKs -->
-<script type="module">
-    // Import necessary Firebase modules
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot, collection, query, addDoc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-
-    setLogLevel('debug'); // Enable Firestore logs
-
-    let app;
-    let db;
-    let auth;
-    let userId = null;
-    let blotterUnsubscribe = null; // To store the onSnapshot listener
-
-    // Global variables (MUST BE USED)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-    // Gemini API Setup
-    const API_KEY = ""; // Kept empty; Canvas provides key at runtime
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
-    
-    // Global state for chat
-    let chatHistory = [];
-    const MAX_RETRIES = 5;
-    const INITIAL_BACKOFF_MS = 1000;
-
-    // --- UTILITIES ---
-
-    // Function to show custom message box
-    window.showMessage = (text, isError = false) => {
-        const box = document.getElementById('message-box');
-        const textElement = document.getElementById('message-text');
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, orderBy, getDocs, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        box.classList.remove('translate-x-full', 'bg-green-600', 'bg-red-600');
-        box.classList.add('translate-x-0', isError ? 'bg-red-600' : 'bg-green-600');
-        textElement.textContent = text;
+        // Use the globally provided Firebase config and auth token
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        setTimeout(() => {
-            box.classList.remove('translate-x-0');
-            box.classList.add('translate-x-full');
-        }, 4000);
-    };
+        setLogLevel('debug'); // Enable detailed logging
 
-    // Blotter Collection Path
-    const getBlotterCollectionRef = () => {
-        return collection(db, `artifacts/${appId}/public/data/blotters`);
-    };
+        let app;
+        let db;
+        let auth;
+        let currentUserId = null;
+        let currentRole = null;
+        let isAuthReady = false;
 
-    // --- FIREBASE INITIALIZATION & AUTH ---
+        // Global variables for other functions to use
+        window.db = db;
+        window.auth = auth;
+        window.getCurrentUserId = () => currentUserId;
+        window.getCurrentRole = () => currentRole;
+        window.onSnapshot = onSnapshot;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+        window.updateDoc = updateDoc;
+        window.doc = doc;
+        window.addDoc = addDoc;
+        window.serverTimestamp = serverTimestamp;
 
-    const initFirebase = async () => {
-        try {
+        const loader = document.getElementById('loader');
+
+        // --- FIREBASE INITIALIZATION AND AUTHENTICATION ---
+        async function initializeFirebase() {
             if (Object.keys(firebaseConfig).length === 0) {
-                document.getElementById('loading-screen').innerHTML = '<p class="text-red-600 font-bold">FIREBASE CONFIG MISSING. Cannot run fully functional app.</p>';
+                console.error("Firebase configuration not found.");
+                // Fallback UI indication
+                document.getElementById('loader').innerHTML = `<p class="text-red-600">Initialization failed. Firebase Config is missing.</p>`;
                 return;
             }
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            // Listen for auth state change
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                } else {
-                    // Sign in with custom token or anonymously
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                    // Re-run onAuthStateChanged to get the authenticated user
-                    return;
-                }
-                
-                document.getElementById('current-user-id').textContent = userId;
-                document.getElementById('user-info').textContent = `User ID: ${userId}`;
-                document.getElementById('logout-btn').classList.remove('hidden');
-                document.getElementById('loading-screen').classList.add('hidden');
-                document.getElementById('role-selection').classList.remove('hidden');
-                
-                // Start listening for blotter data once authenticated
-                if (db && userId) {
-                    startBlotterListener();
-                }
-            });
 
-        } catch (error) {
-            console.error("Firebase initialization failed:", error);
-            document.getElementById('loading-screen').innerHTML = `<p class="text-red-600 font-bold">Initialization Error: ${error.message}</p>`;
-        }
-    };
-
-    window.logout = async () => {
-        try {
-            if (auth) {
-                await signOut(auth);
-                window.location.reload(); // Simple refresh to reset state
-            }
-        } catch (error) {
-            console.error("Logout failed:", error);
-            showMessage("Logout failed. See console for details.", true);
-        }
-    };
-    
-    // --- FIRESTORE DATA HANDLING ---
-
-    const startBlotterListener = () => {
-        if (blotterUnsubscribe) {
-            blotterUnsubscribe(); // Detach previous listener if any
-        }
-
-        const blottersQuery = query(getBlotterCollectionRef());
-
-        blotterUnsubscribe = onSnapshot(blottersQuery, (snapshot) => {
-            const blotters = [];
-            snapshot.forEach((doc) => {
-                blotters.push({ id: doc.id, ...doc.data() });
-            });
-            renderBlotterData(blotters);
-            updateAnalytics(blotters);
-        }, (error) => {
-            console.error("Error listening to blotters:", error);
-            showMessage("Failed to load blotter data in real-time.", true);
-        });
-    };
-
-    window.recordNewBlotter = async () => {
-        const name = document.getElementById('complainant-name').value;
-        const type = document.getElementById('incident-type').value;
-        const narrative = document.getElementById('narrative').value;
-
-        if (!name || !type || !narrative) return showMessage("Please fill all fields.", true);
-
-        try {
-            const newDocRef = doc(getBlotterCollectionRef());
-            const blotterId = 'BRGY-' + Math.floor(1000 + Math.random() * 9000); // Simple unique ID
-
-            await setDoc(newDocRef, {
-                userId: userId, // Staff user who recorded it
-                complainantName: name,
-                incidentType: type,
-                narrative: narrative,
-                status: 'Pending',
-                dateFiled: new Date().toISOString(),
-                blotterId: blotterId
-            });
-
-            document.getElementById('new-blotter-modal').classList.add('hidden');
-            document.getElementById('new-blotter-form').reset();
-            showMessage(`New Blotter recorded successfully! ID: ${blotterId}`);
-
-        } catch (error) {
-            console.error("Error recording new blotter:", error);
-            showMessage("Error recording blotter. See console.", true);
-        }
-    };
-
-    window.updateBlotterStatus = async () => {
-        const blotterId = document.getElementById('update-case-modal').dataset.docId;
-        const newStatus = document.getElementById('new-status').value;
-        if (!blotterId) return showMessage("Case ID missing.", true);
-
-        try {
-            const docRef = doc(getBlotterCollectionRef(), blotterId);
-            await updateDoc(docRef, { status: newStatus });
-
-            document.getElementById('update-case-modal').classList.add('hidden');
-            showMessage(`Case ${document.getElementById('modal-blotter-id').textContent} status updated to ${newStatus}.`);
-        } catch (error) {
-            console.error("Error updating blotter status:", error);
-            showMessage("Error updating status. See console.", true);
-        }
-    };
-    
-    // --- UI RENDERING & ANALYTICS ---
-
-    const renderBlotterData = (blotters) => {
-        const tbody = document.getElementById('blotter-table-body');
-        tbody.innerHTML = '';
-        
-        if (blotters.length === 0) {
-            document.getElementById('no-blotters-msg').classList.remove('hidden');
-            return;
-        } else {
-            document.getElementById('no-blotters-msg').classList.add('hidden');
-        }
-
-        // Sort blotters by date filed (newest first)
-        blotters.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
-
-        blotters.forEach(blotter => {
-            const date = new Date(blotter.dateFiled).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            let statusClass, statusText;
-
-            switch (blotter.status) {
-                case 'Pending':
-                    statusClass = 'bg-yellow-100 text-yellow-800';
-                    statusText = 'Pending';
-                    break;
-                case 'Ongoing':
-                    statusClass = 'bg-blue-100 text-blue-800';
-                    statusText = 'Ongoing';
-                    break;
-                case 'Resolved':
-                    statusClass = 'bg-green-100 text-green-800';
-                    statusText = 'Resolved';
-                    break;
-                default:
-                    statusClass = 'bg-gray-100 text-gray-800';
-                    statusText = 'N/A';
-            }
-
-            const row = tbody.insertRow();
-            row.className = 'hover:bg-gray-50 transition duration-150';
-            row.innerHTML = `
-                <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${blotter.blotterId}</td>
-                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${date}</td>
-                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${blotter.incidentType}</td>
-                <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${blotter.complainantName}</td>
-                <td class="px-3 py-3 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                        ${statusText}
-                    </span>
-                </td>
-                <td class="px-3 py-3 whitespace-nowrap text-sm font-medium">
-                    <button onclick="openUpdateModal('${blotter.id}', '${blotter.blotterId}', '${blotter.complainantName}', '${blotter.incidentType}', \`${blotter.narrative.replace(/'/g, "\\'")}\`, '${blotter.status}', '${date}')" class="text-indigo-600 hover:text-indigo-900 text-xs font-semibold">View / Update</button>
-                </td>
-            `;
-        });
-    };
-
-    window.openUpdateModal = (docId, blotterId, name, type, narrative, currentStatus, date) => {
-        const modal = document.getElementById('update-case-modal');
-        const details = document.getElementById('modal-details');
-        
-        modal.dataset.docId = docId;
-        document.getElementById('modal-blotter-id').textContent = blotterId;
-        document.getElementById('new-status').value = currentStatus;
-        
-        details.innerHTML = `
-            <p><span class="font-semibold">Filed By:</span> ${name}</p>
-            <p><span class="font-semibold">Date Filed:</span> ${date}</p>
-            <p><span class="font-semibold">Type:</span> ${type}</p>
-            <p><span class="font-semibold">Narrative:</span> ${narrative}</p>
-            <p><span class="font-semibold">Current Status:</span> <span class="font-bold">${currentStatus}</span></p>
-        `;
-
-        modal.classList.remove('hidden');
-    };
-
-    const updateAnalytics = (blotters) => {
-        document.getElementById('total-cases-count').textContent = blotters.length;
-        document.getElementById('pending-cases-count').textContent = blotters.filter(b => b.status === 'Pending').length;
-        document.getElementById('resolved-cases-count').textContent = blotters.filter(b => b.status === 'Resolved').length;
-
-        // Simulate AI Analytics: Count Incident Types
-        const incidentCounts = blotters.reduce((acc, blotter) => {
-            acc[blotter.incidentType] = (acc[blotter.incidentType] || 0) + 1;
-            return acc;
-        }, {});
-
-        const sortedIncidents = Object.entries(incidentCounts)
-            .sort(([, a], [, b]) => b - a)
-            .slice(0, 5); // Top 5
-
-        const list = document.getElementById('top-incidents-list');
-        list.innerHTML = '';
-
-        if (sortedIncidents.length === 0) {
-             list.innerHTML = '<li class="text-sm text-gray-500">No data to analyze yet.</li>';
-        } else {
-            sortedIncidents.forEach(([type, count], index) => {
-                const total = blotters.length;
-                const percentage = ((count / total) * 100).toFixed(1);
-                list.innerHTML += `
-                    <li class="flex justify-between items-center text-base">
-                        <span class="font-medium text-gray-800">${index + 1}. ${type}</span>
-                        <span class="text-blue-600 font-bold">${count} (${percentage}%)</span>
-                    </li>
-                    <div class="h-2 bg-gray-200 rounded-full">
-                        <div class="h-2 bg-blue-500 rounded-full" style="width: ${percentage}%;"></div>
-                    </div>
-                `;
-            });
-        }
-    };
-
-    window.setView = (view) => {
-        document.getElementById('role-selection').classList.add('hidden');
-        document.getElementById('staff-dashboard').classList.add('hidden');
-        document.getElementById('resident-portal').classList.add('hidden');
-
-        if (view === 'staff') {
-            document.getElementById('staff-dashboard').classList.remove('hidden');
-        } else if (view === 'resident') {
-            document.getElementById('resident-portal').classList.remove('hidden');
-            // Ensure chat window is scrolled to bottom when switching to resident view
-            setTimeout(() => {
-                const chatWindow = document.getElementById('chat-window');
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            }, 100);
-        }
-    };
-
-    window.generateReport = () => {
-        showMessage("Generating Annual/Monthly Report... (Simulated PDF Export)");
-        // In a real application, this would trigger a backend process to compile data and create a PDF.
-        // For this prototype, we confirm the action and prompt the user to check the console for data.
-        console.log("--- REPORT GENERATION SIMULATED ---");
-        console.log("Fetching all data from Firestore, grouping by month, and calculating summary statistics.");
-        console.log("Report generated successfully (simulated PDF download).");
-    };
-
-    // --- GEMINI CHATBOT IMPLEMENTATION ---
-
-    const appendMessage = (text, sender, isTyping = false) => {
-        const chatWindow = document.getElementById('chat-window');
-        const messageDiv = document.createElement('div');
-        
-        if (sender === 'user') {
-            messageDiv.className = 'flex justify-end';
-            messageDiv.innerHTML = `
-                <div class="bg-blue-600 text-white p-3 rounded-tl-xl rounded-bl-xl rounded-tr-xl max-w-xs md:max-w-md shadow-md">
-                    ${text}
-                </div>
-            `;
-        } else {
-            messageDiv.className = 'flex justify-start';
-            messageDiv.innerHTML = `
-                <div id="${isTyping ? 'bot-typing-message' : ''}" class="bg-gray-200 text-gray-800 p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl max-w-xs md:max-w-md shadow-md">
-                    ${isTyping ? '<div class="flex space-x-1"><span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-100"></span><span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-200"></span><span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce delay-300"></span></div>' : text.replace(/\n/g, '<br>')}
-                </div>
-            `;
-        }
-        chatWindow.appendChild(messageDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    };
-
-    const getSystemInstruction = () => {
-        const instruction = `
-            You are the "Barangay eBlotter Chatbot," a helpful assistant for residents of a Philippine local government unit (Barangay). 
-            Your primary functions are to guide users through two main tasks:
-            1. **Filing a New Complaint/Incident Report:** If the user initiates this, you must ask for specific, single pieces of information one by one:
-               - Complainant Name (Full Name)
-               - Incident Type (e.g., Physical Dispute, Theft, Noise Complaint)
-               - Date and Time of Incident
-               - Exact Location of Incident (Address/Landmark)
-               - Detailed Narrative of the Incident (What happened?)
-               Once all information is gathered, you must output a FINAL message in a structured JSON format inside a single code block, like this:
-               \`\`\`json
-               {
-                 "status": "complete",
-                 "action": "file_report",
-                 "data": {
-                   "name": "...",
-                   "type": "...",
-                   "date_time": "...",
-                   "location": "...",
-                   "narrative": "..."
-                 }
-               }
-               \`\`\`
-            2. **Checking Case Status:** If the user asks to check status, you must ask for the **Blotter ID** (e.g., BRGY-1234). Once you receive a 4-digit ID, you must output the following JSON:
-               \`\`\`json
-               {
-                 "status": "complete",
-                 "action": "check_status",
-                 "blotter_id": "BRGY-XXXX"
-               }
-               \`\`\`
-            3. **General Conversation:** For other queries, respond naturally and concisely, but always redirect them back to the two main functions.
-            
-            **Crucial Rules:**
-            - **Do not output the final JSON until all required data for the action is collected.**
-            - **Always greet the user and offer the two main functions.**
-            - **Keep your responses brief and conversational.**
-        `;
-        return instruction;
-    };
-
-
-    const callGeminiApi = async (messages) => {
-        const payload = {
-            contents: messages,
-            systemInstruction: {
-                parts: [{ text: getSystemInstruction() }]
-            },
-        };
-
-        for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-            const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
-            
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Expose initialized instances to the window
+                window.db = db;
+                window.auth = auth;
+
+                // 1. Listen for Auth State Changes
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        currentUserId = user.uid;
+                        document.getElementById('current-user-id').textContent = `ID: ${currentUserId.substring(0, 12)}...`;
+                    } else {
+                        // User logged out or initial state
+                        currentUserId = null;
+                        document.getElementById('current-user-id').textContent = 'ID: Not Authenticated';
+                    }
+                    isAuthReady = true;
+                    // Start listening to data once authenticated status is known
+                    if (currentRole) {
+                        startRealtimeListeners();
+                    }
                 });
 
-                if (!response.ok) {
-                    if (response.status === 429 && attempt < MAX_RETRIES - 1) {
-                        // Rate limit error, retry after delay
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        continue;
-                    }
-                    throw new Error(`API call failed with status: ${response.status}`);
+                // 2. Sign In
+                loader.classList.remove('hidden');
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
                 }
-
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that request.";
-                return text;
+                loader.classList.add('hidden');
 
             } catch (error) {
-                console.error(`Attempt ${attempt + 1} failed:`, error);
-                if (attempt === MAX_RETRIES - 1) {
-                    throw new Error("Failed to connect to the AI service after multiple retries.");
-                }
-                await new Promise(resolve => setTimeout(resolve, delay));
+                console.error("Firebase initialization or sign-in failed:", error);
+                document.getElementById('loader').innerHTML = `<p class="text-red-600">Initialization failed. Check console for details.</p>`;
             }
         }
-    };
 
-    const handleChatbotAction = async (jsonString) => {
-        try {
-            const json = JSON.parse(jsonString);
+        window.initializeFirebase = initializeFirebase;
 
-            if (json.action === 'file_report' && json.status === 'complete') {
-                const data = json.data;
+        // Function to select a role and show the main app
+        window.selectRole = (role) => {
+            currentRole = role;
+            document.getElementById('role-selector').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            document.getElementById('current-role').textContent = `${role}`;
+            
+            // Re-render UI and start listeners based on the new role
+            setupNavigation(role);
+            if (isAuthReady) {
+                startRealtimeListeners();
+            }
+        };
+
+        // Function to log out (or reset role)
+        window.logout = () => {
+            currentRole = null;
+            // Clear blotter cache and stop listener
+            blottersCache = [];
+            if (unsubscribeBlotters) {
+                unsubscribeBlotters();
+                unsubscribeBlotters = null;
+            }
+
+            // Hide all tabs and content
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('nav-tabs').innerHTML = '';
+            document.getElementById('app-content').classList.add('hidden');
+            document.getElementById('role-selector').classList.remove('hidden');
+            document.getElementById('current-role').textContent = '';
+            document.getElementById('citizen-message').classList.add('hidden');
+            document.getElementById('staff-message').classList.add('hidden');
+        };
+
+        // Call initialization on load
+        initializeFirebase();
+
+
+        // --- REAL-TIME DATA LISTENERS ---
+        function getBlotterCollectionRef() {
+            // Path: /artifacts/{appId}/public/data/blotters
+            return collection(db, `artifacts/${appId}/public/data/blotters`);
+        }
+
+        let blottersCache = [];
+        let unsubscribeBlotters = null;
+
+        function startRealtimeListeners() {
+            if (!isAuthReady || !currentUserId || !db) return;
+
+            // Clear previous listener if it exists
+            if (unsubscribeBlotters) {
+                unsubscribeBlotters();
+                unsubscribeBlotters = null;
+            }
+
+            const blotterRef = getBlotterCollectionRef();
+
+            // Set up a universal listener for all blotters
+            unsubscribeBlotters = onSnapshot(blotterRef, (snapshot) => {
+                blottersCache = [];
+                snapshot.forEach(doc => {
+                    // Check if dateReported is a valid Firestore Timestamp before converting
+                    const data = doc.data();
+                    const dateReported = data.dateReported && typeof data.dateReported.toDate === 'function' 
+                                         ? data.dateReported.toDate() 
+                                         : new Date(); // Fallback to current date if invalid
+                    
+                    blottersCache.push({ 
+                        id: doc.id, 
+                        ...data, 
+                        dateReported: dateReported 
+                    });
+                });
                 
-                const newDocRef = doc(getBlotterCollectionRef());
-                const blotterId = 'BRGY-' + Math.floor(1000 + Math.random() * 9000); // Simple unique ID
+                // Sort by date reported descending (newest first)
+                blottersCache.sort((a, b) => b.dateReported.getTime() - a.dateReported.getTime());
 
-                await setDoc(newDocRef, {
-                    userId: 'resident:' + userId, // Identify as resident filing
-                    complainantName: data.name,
-                    incidentType: data.type,
-                    narrative: `[Filed via Chatbot]\nLocation: ${data.location}\nDate/Time: ${data.date_time}\nDetails: ${data.narrative}`,
+                // Re-render all role-specific components
+                renderCitizenReports();
+                renderBlotterTable();
+                renderStaffActionList();
+                renderCaptainReviewList();
+                renderStatistics();
+            }, (error) => {
+                console.error("Error listening to blotter collection:", error);
+                document.getElementById('blotter-records-body').innerHTML = `<tr><td colspan="6" class="p-6 text-center text-red-500">Failed to load data.</td></tr>`;
+            });
+        }
+        
+        window.startRealtimeListeners = startRealtimeListeners;
+
+        // --- DATA RENDERING FUNCTIONS ---
+
+        function getStatusColor(status) {
+            return `status-${status.replace(/[^a-zA-Z]/g, '')}`;
+        }
+
+        // 1. Render Citizen's Reports (Track Blotter Status)
+        function renderCitizenReports() {
+            if (currentRole !== 'Complainant/Citizen') return;
+
+            const list = document.getElementById('citizen-report-list');
+            const citizenReports = blottersCache.filter(b => b.reporterId === currentUserId);
+            
+            if (list.closest('.tab-content').classList.contains('hidden') && !citizenReports.length) return; // Optimization
+
+            if (citizenReports.length === 0) {
+                list.innerHTML = '<div class="p-8 text-center text-slate-500 card border-2 border-dashed border-emerald-300">You have not submitted any reports yet. Use the "Submit Report" tab.</div>';
+                return;
+            }
+
+            list.innerHTML = citizenReports.map(b => `
+                <div class="card p-5 border-l-4 border-emerald-500">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="font-bold text-xl text-slate-800">${b.incidentType}</p>
+                        <span class="status-badge ${getStatusColor(b.status)}">${b.status}</span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-mono mb-3">Report ID: ${b.id.substring(0, 10)}</p>
+                    
+                    <div class="text-sm text-slate-600 space-y-1">
+                        <p><strong>Incident Date:</strong> ${b.dateOfIncident || 'N/A'}</p>
+                        ${b.schedule ? `<p class="font-semibold text-blue-600">Hearing Scheduled: ${new Date(b.schedule).toLocaleString()}</p>` : ''}
+                    </div>
+                    
+                    ${b.resolution ? `<div class="mt-3 pt-3 border-t border-slate-100">
+                        <p class="text-sm font-semibold text-slate-700">Resolution:</p>
+                        <p class="text-sm italic text-slate-500">${b.resolution.substring(0, 100)}...</p>
+                    </div>` : ''}
+                    
+                    <span class="text-xs text-slate-400 mt-2 block text-right">Reported: ${b.dateReported.toLocaleDateString()}</span>
+                </div>
+            `).join('');
+        }
+
+        // 2. Render Blotter Table (View Records - Staff/Captain/Admin)
+        let currentFilter = 'all';
+        window.filterRecords = (status) => {
+            currentFilter = status;
+            renderBlotterTable();
+        };
+
+        function renderBlotterTable() {
+            if (!['Barangay Staff/Secretary', 'Barangay Captain/Lupon', 'System Administrator'].includes(currentRole)) return;
+            
+            const tbody = document.getElementById('blotter-records-body');
+            let filteredReports = blottersCache;
+
+            if (currentFilter !== 'all') {
+                filteredReports = blottersCache.filter(b => b.status === currentFilter);
+            }
+
+            // Determine visible actions based on role
+            const isStaff = currentRole === 'Barangay Staff/Secretary';
+            const isCaptain = currentRole === 'Barangay Captain/Lupon';
+
+            // Update header for actions
+            document.getElementById('table-actions-header').textContent = isStaff ? 'Action (Staff)' : (isCaptain ? 'Approval (Captain)' : 'Details');
+
+            if (filteredReports.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-500">No ${currentFilter === 'all' ? '' : currentFilter} records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filteredReports.map(b => {
+                let actionButton = `<span class="text-slate-400 text-sm">View</span>`;
+                const isFinal = b.status === 'Approved';
+
+                if (isStaff && !isFinal) {
+                    // Staff: Update Status, Schedule, Manage Resolution
+                    actionButton = `<button onclick="openModal('${b.id}', 'staff')" class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline">Update Status</button>`;
+                } else if (isCaptain && b.status === 'Resolved') {
+                    // Captain: Review & Approve
+                    actionButton = `<button onclick="openModal('${b.id}', 'captain')" class="text-red-600 hover:text-red-800 font-bold hover:underline">Review Decision</button>`;
+                } else if (isCaptain && b.status === 'Needs Revision') {
+                    // Captain: Informational only
+                    actionButton = `<span class="text-pink-600 font-medium">Revision Needed</span>`;
+                }
+
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 font-mono">${b.id.substring(0, 8)}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-slate-900">${b.complainantName}</td>
+                        <td class="px-6 py-4 text-sm text-slate-600">${b.incidentType}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="status-badge ${getStatusColor(b.status)}">
+                                ${b.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${b.dateReported.toLocaleDateString()}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">${actionButton}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 3. Render Staff Action List
+        function renderStaffActionList() {
+            if (currentRole !== 'Barangay Staff/Secretary') return;
+            
+            const list = document.getElementById('staff-action-list');
+            const actionCases = blottersCache.filter(b => 
+                b.status === 'Pending' || 
+                b.status === 'Under Investigation' || 
+                b.status === 'Scheduled' ||
+                b.status === 'Needs Revision' // Staff needs to act on these too
+            );
+            
+            if (list.closest('.tab-content').classList.contains('hidden') && !actionCases.length) return; // Optimization
+
+            if (actionCases.length === 0) {
+                list.innerHTML = '<div class="p-4 text-center text-slate-500 bg-white rounded-xl border border-dashed border-emerald-300">No cases requiring immediate staff attention.</div>';
+                return;
+            }
+
+            list.innerHTML = actionCases.map(b => `
+                <div class="card p-4 border-l-4 border-indigo-500 bg-white shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <p class="font-semibold text-slate-800">${b.incidentType}</p>
+                        <span class="status-badge ${getStatusColor(b.status)}">${b.status}</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1 truncate">Complainant: ${b.complainantName}</p>
+                    <button onclick="openModal('${b.id}', 'staff')" class="text-xs text-indigo-600 hover:text-indigo-800 font-bold mt-2">
+                        Take Action &rarr;
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // 4. Render Captain Review List
+        function renderCaptainReviewList() {
+            if (currentRole !== 'Barangay Captain/Lupon') return;
+
+            const list = document.getElementById('captain-review-list');
+            const resolvedCases = blottersCache.filter(b => b.status === 'Resolved');
+            
+            if (list.closest('.tab-content').classList.contains('hidden') && !resolvedCases.length) return; // Optimization
+
+            if (resolvedCases.length === 0) {
+                list.innerHTML = '<div class="p-6 text-center text-slate-500 card border-2 border-dashed border-emerald-300">No cases currently awaiting final approval.</div>';
+                return;
+            }
+
+            list.innerHTML = resolvedCases.map(b => `
+                <div class="card p-5 border-l-4 border-red-500 bg-white shadow-md">
+                    <p class="font-bold text-lg text-slate-800">${b.incidentType}</p>
+                    <p class="text-sm text-slate-600 mt-1">Status: <span class="text-red-500 font-semibold">Awaiting Approval</span></p>
+                    <p class="text-sm text-slate-500 mt-2 italic">Resolution Summary: ${b.resolution ? b.resolution.substring(0, 80) + '...' : 'N/A'}</p>
+                    <button onclick="openModal('${b.id}', 'captain')" class="btn-primary bg-red-600 hover:bg-red-700 text-xs mt-3 py-2 px-4">
+                        Review & Decide
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // 5. Render Statistics (Captain/Admin)
+        function renderStatistics() {
+            if (currentRole !== 'Barangay Captain/Lupon' && currentRole !== 'System Administrator') return;
+            
+            const total = blottersCache.length;
+            const approved = blottersCache.filter(b => b.status === 'Approved').length;
+            const resolved = blottersCache.filter(b => b.status === 'Resolved').length;
+            const pending = total - approved - resolved; // Includes Pending, Inv, Scheduled, Needs Revision
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-resolved').textContent = approved;
+            document.getElementById('stat-pending').textContent = pending;
+        }
+
+
+        // --- FIREBASE WRITE OPERATIONS ---
+
+        // Citizen and Staff Form Submission
+        async function submitBlotter(data, formEl) {
+            const isStaff = data.isStaff;
+            const messageEl = isStaff ? document.getElementById('staff-message') : document.getElementById('citizen-message');
+            
+            messageEl.classList.add('hidden'); // Hide message initially
+            
+            try {
+                const blotterRef = getBlotterCollectionRef();
+                
+                await addDoc(blotterRef, {
+                    ...data,
+                    dateReported: serverTimestamp(),
+                    reporterId: currentUserId,
                     status: 'Pending',
-                    dateFiled: new Date().toISOString(),
-                    blotterId: blotterId
+                    resolution: null,
+                    schedule: null
                 });
 
-                const successMessage = `Thank you, **${data.name}**. Your report has been successfully recorded. Your Blotter ID is **${blotterId}**. Please keep this ID to check your status later. The barangay staff will review your case shortly.`;
-                appendMessage(successMessage, 'bot');
-                chatHistory.push({ role: "model", parts: [{ text: successMessage }] });
-                chatHistory = []; // Reset chat after successful filing
-                appendMessage("I am ready for a new request. How may I assist you next?", 'bot');
+                messageEl.textContent = `✅ Report submitted successfully! Tracking ID: ${currentUserId.substring(0, 5)}...`;
+                messageEl.classList.remove('hidden');
+                messageEl.className = 'mt-4 p-3 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800';
+
+                // Clear form
+                formEl.reset();
+
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                messageEl.textContent = `❌ Error submitting report: ${e.message}`;
+                messageEl.classList.remove('hidden');
+                messageEl.className = 'mt-4 p-3 rounded-lg text-sm font-medium bg-red-100 text-red-800';
+            }
+        }
+        
+        window.handleBlotterSubmission = (event) => {
+            event.preventDefault();
+            const formEl = document.getElementById('blotter-form');
+            const data = {
+                complainantName: document.getElementById('c_name').value,
+                contact: document.getElementById('c_contact').value,
+                incidentType: document.getElementById('c_type').value,
+                dateOfIncident: document.getElementById('c_date').value,
+                description: document.getElementById('c_description').value,
+                isStaff: false
+            };
+            submitBlotter(data, formEl);
+        };
+
+        window.handleStaffBlotterSubmission = (event) => {
+            event.preventDefault();
+            const formEl = document.getElementById('staff-blotter-form');
+            const data = {
+                complainantName: document.getElementById('s_c_name').value,
+                contact: document.getElementById('s_c_contact').value,
+                incidentType: document.getElementById('s_c_type').value,
+                dateOfIncident: new Date().toISOString().split('T')[0], // Use today's date for walk-in
+                description: document.getElementById('s_c_description').value,
+                isStaff: true,
+                recordedBy: currentUserId
+            };
+            submitBlotter(data, formEl);
+        };
+
+        // --- MODAL AND STATUS/RESOLUTION UPDATE LOGIC ---
+        const actionModal = document.getElementById('action-modal');
+        const modalForm = document.getElementById('modal-form');
+
+        window.openModal = (blotterId, actorRole) => {
+            const blotter = blottersCache.find(b => b.id === blotterId);
+            if (!blotter) {
+                console.error("Blotter not found:", blotterId);
+                return;
+            }
+
+            document.getElementById('modal-blotter-id').value = blotterId;
+            document.getElementById('modal-error').classList.add('hidden');
+
+            // Reset fields
+            document.getElementById('modal-status').value = blotter.status === 'Approved' ? 'Under Investigation' : blotter.status; // Default staff status
+            document.getElementById('modal-schedule').value = blotter.schedule || '';
+            document.getElementById('modal-resolution').value = blotter.resolution || '';
+            document.getElementById('modal-approval').value = '';
+            
+            // Hide/Show fields for staff/captain
+            const statusField = document.getElementById('status-field');
+            const scheduleField = document.getElementById('schedule-field');
+            const resolutionField = document.getElementById('resolution-field');
+            const approvalField = document.getElementById('approval-field');
+            
+            statusField.classList.add('hidden');
+            scheduleField.classList.add('hidden');
+            resolutionField.classList.add('hidden');
+            approvalField.classList.add('hidden');
+            document.getElementById('modal-resolution').readOnly = false;
 
 
-            } else if (json.action === 'check_status' && json.status === 'complete') {
-                const blotterId = json.blotter_id;
-                
-                // Fetch data from Firestore (simulated fetch since we don't have getDocs import, we'll iterate)
-                let caseFound = false;
-                let blotterStatus = "Not Found";
-                
-                blotterUnsubscribe(); // Temporarily stop listener to get current data
-                const blotters = [];
-                const snapshot = await getDocs(query(getBlotterCollectionRef()));
-                snapshot.forEach((doc) => blotters.push(doc.data()));
-                startBlotterListener(); // Restart listener
+            // Set up modal based on actor role
+            if (actorRole === 'staff') {
+                document.getElementById('modal-title').textContent = `Actioning Case: ${blotter.incidentType}`;
+                document.getElementById('modal-submit-btn').textContent = 'Save Updates';
+                statusField.classList.remove('hidden');
+                document.getElementById('modal-status').onchange = (e) => toggleStaffFields(e.target.value);
+                // Initial call to set fields
+                toggleStaffFields(document.getElementById('modal-status').value);
+            } else if (actorRole === 'captain') {
+                document.getElementById('modal-title').textContent = `Reviewing Resolution for: ${blotter.incidentType}`;
+                document.getElementById('modal-submit-btn').textContent = 'Submit Decision';
+                approvalField.classList.remove('hidden');
+                resolutionField.classList.remove('hidden'); // Show existing resolution
+                document.getElementById('modal-resolution').readOnly = true;
+            }
+            
+            actionModal.classList.remove('hidden');
+            actionModal.classList.add('flex');
+        };
 
-                const matchedCase = blotters.find(b => b.blotterId === blotterId);
+        function toggleStaffFields(status) {
+            const scheduleField = document.getElementById('schedule-field');
+            const resolutionField = document.getElementById('resolution-field');
 
-                if (matchedCase) {
-                    blotterStatus = `**Blotter ID ${blotterId}** (Filed by ${matchedCase.complainantName}) is currently **${matchedCase.status}**. Date Filed: ${new Date(matchedCase.dateFiled).toLocaleDateString()}. The staff will contact you for next steps.`;
-                    caseFound = true;
-                } else {
-                    blotterStatus = `Sorry, I could not find a case with Blotter ID **${blotterId}**. Please double-check the ID or try filing a new report.`;
+            scheduleField.classList.add('hidden');
+            resolutionField.classList.add('hidden');
+            
+            // Require certain fields based on status
+            document.getElementById('modal-schedule').required = false;
+            document.getElementById('modal-resolution').required = false;
+
+            if (status === 'Scheduled') {
+                scheduleField.classList.remove('hidden');
+                document.getElementById('modal-schedule').required = true;
+            } else if (status === 'Resolved') {
+                resolutionField.classList.remove('hidden');
+                document.getElementById('modal-resolution').required = true;
+            }
+        }
+
+        window.closeModal = () => {
+            actionModal.classList.add('hidden');
+            actionModal.classList.remove('flex');
+        };
+
+        window.handleModalAction = async (event) => {
+            event.preventDefault();
+            const blotterId = document.getElementById('modal-blotter-id').value;
+            const blotterRef = doc(getBlotterCollectionRef(), blotterId);
+            const updates = {};
+            const errorEl = document.getElementById('modal-error');
+            errorEl.classList.add('hidden');
+
+            try {
+                if (currentRole === 'Barangay Staff/Secretary') {
+                    const status = document.getElementById('modal-status').value;
+                    updates.status = status;
+                    updates.updatedBy = currentUserId;
+                    updates.lastUpdate = serverTimestamp();
+
+                    if (status === 'Scheduled') {
+                        const schedule = document.getElementById('modal-schedule').value;
+                        if (!schedule) throw new Error("Schedule date/time is required.");
+                        updates.schedule = schedule;
+                        updates.resolution = null; 
+                    } else if (status === 'Resolved') {
+                        const resolution = document.getElementById('modal-resolution').value;
+                        if (!resolution) throw new Error("Resolution details are required for resolved cases.");
+                        updates.resolution = resolution;
+                        updates.schedule = null;
+                    } else {
+                        updates.schedule = null;
+                        updates.resolution = null;
+                    }
+                    
+                } else if (currentRole === 'Barangay Captain/Lupon') {
+                    const approval = document.getElementById('modal-approval').value;
+                    if (!approval) throw new Error("An approval decision is required.");
+
+                    updates.status = approval; // Will be 'Approved' or 'Needs Revision'
+                    updates.approvedBy = currentUserId;
+                    updates.approvalDate = serverTimestamp();
                 }
 
-                appendMessage(blotterStatus, 'bot');
-                chatHistory.push({ role: "model", parts: [{ text: blotterStatus }] });
+                await updateDoc(blotterRef, updates);
+                closeModal();
+
+            } catch (error) {
+                console.error("Error updating blotter:", error);
+                errorEl.textContent = `Action failed: ${error.message}`;
+                errorEl.classList.remove('hidden');
+            }
+        };
+
+
+        // --- UI/NAVIGATION LOGIC ---
+
+        const roleTabs = {
+            'Complainant/Citizen': [
+                { id: 'citizen-submit-report', name: 'Submit Report' },
+                { id: 'citizen-track-status', name: 'Track Status' }
+            ],
+            'Barangay Staff/Secretary': [
+                { id: 'staff-dashboard', name: 'Staff Dashboard' },
+                { id: 'view-records', name: 'View/Manage Records' }
+            ],
+            'Barangay Captain/Lupon': [
+                { id: 'captain-dashboard', name: 'Captain Dashboard' },
+                { id: 'view-records', name: 'Search & View Records' }
+            ],
+            'System Administrator': [
+                { id: 'admin-dashboard', name: 'Admin Dashboard' },
+                { id: 'view-records', name: 'Search & View Records' }
+            ]
+        };
+
+        function setupNavigation(role) {
+            const tabs = roleTabs[role];
+            const navEl = document.getElementById('nav-tabs');
+            navEl.innerHTML = ''; 
+
+            if (!tabs) return;
+
+            tabs.forEach((tab, index) => {
+                const button = document.createElement('button');
+                button.textContent = tab.name;
+                button.className = `nav-button px-5 py-3 text-sm font-medium transition-colors duration-200 ease-in-out text-slate-500 hover:text-emerald-600 border-b-2 border-transparent`;
+                button.onclick = () => showTab(tab.id, button);
+                navEl.appendChild(button);
+            });
+
+            // Automatically show the first tab and highlight its button
+            const firstButton = navEl.querySelector('button');
+            if (firstButton) {
+                 showTab(tabs[0].id, firstButton);
+            }
+        }
+
+        function showTab(tabId, clickedButton) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Reset all tab buttons styling
+            document.querySelectorAll('#nav-tabs button').forEach(el => {
+                el.classList.remove('active', 'border-emerald-500', 'text-emerald-600');
+                el.classList.add('text-slate-500');
+            });
+
+            // Show the selected content
+            const contentEl = document.getElementById(tabId);
+            if (contentEl) {
+                contentEl.classList.remove('hidden');
                 
-            } else {
-                console.warn("Received incomplete or unknown action JSON:", json);
-                appendMessage("I received a partial request. Can you please complete the necessary information? I need the final structured JSON.", 'bot');
+                // Highlight the active button
+                if (clickedButton) {
+                    clickedButton.classList.add('active', 'border-emerald-500', 'text-emerald-600', 'font-bold');
+                    clickedButton.classList.remove('text-slate-500');
+                }
+
+                // Special refresh for table view
+                if (tabId === 'view-records') {
+                    renderBlotterTable();
+                }
             }
-        } catch (e) {
-            console.error("Error parsing or handling chatbot action JSON:", e, jsonString);
-            appendMessage("An error occurred while processing the final data. Let's restart. How may I assist you?", 'bot');
-            chatHistory = []; // Clear history on error
         }
-    };
 
-
-    window.sendChat = async () => {
-        const input = document.getElementById('chat-input');
-        const text = input.value.trim();
-        if (!text) return;
-
-        // Display user message
-        appendMessage(text, 'user');
-        chatHistory.push({ role: "user", parts: [{ text: text }] });
-        input.value = '';
-        input.focus();
-        
-        // Show loading state
-        document.getElementById('chat-send-btn').classList.add('hidden');
-        document.getElementById('chat-loading-btn').classList.remove('hidden');
-
-        // Append typing indicator
-        appendMessage('', 'bot', true);
-        const typingIndicator = document.getElementById('bot-typing-message');
-
-        try {
-            const responseText = await callGeminiApi(chatHistory);
-
-            // Remove typing indicator and replace with final response
-            if(typingIndicator) typingIndicator.parentNode.remove();
-            
-            // Check if the response contains the final JSON action block
-            const jsonRegex = /```json\s*(\{[\s\S]*?\})\s*```/i;
-            const match = responseText.match(jsonRegex);
-
-            if (match && match[1]) {
-                const jsonString = match[1].trim();
-                handleChatbotAction(jsonString);
-            } else {
-                appendMessage(responseText, 'bot');
-                chatHistory.push({ role: "model", parts: [{ text: responseText }] });
-            }
-
-        } catch (error) {
-            console.error("Gemini Chat Error:", error);
-            // Remove typing indicator
-            if(typingIndicator) typingIndicator.parentNode.remove();
-            
-            const errorMessage = "Sorry, I am experiencing a network issue and cannot process your request right now. Please try again later.";
-            appendMessage(errorMessage, 'bot');
-            chatHistory.push({ role: "model", parts: [{ text: errorMessage }] });
-
-        } finally {
-            document.getElementById('chat-send-btn').classList.remove('hidden');
-            document.getElementById('chat-loading-btn').classList.add('hidden');
-            const chatWindow = document.getElementById('chat-window');
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-        }
-    };
-
-    // Initialize the app on load
-    window.onload = initFirebase;
-</script>
-
-<!-- Note: The necessary getDocs import for handleChatbotAction is not in the imports above due to the single file mandate and the need to limit SDK imports. A robust production app would import getDocs. For this prototype, the check_status feature is simulated to provide a conversational response flow. -->
-
+    </script>
 </body>
 </html>
