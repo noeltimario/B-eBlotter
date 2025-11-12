@@ -3,1034 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter)</title>
-    <!-- Tailwind CSS -->
+    <title>eBlotter System Flowchart Table</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Firebase SDKs (Included but bypassed for data access in demo mode) -->
-    <script type="module">
-        // Dummy Firebase utility functions for demo mode
-        window.firebase = {
-            initializeApp: () => ({ name: 'demo-app' }),
-            getAuth: () => ({ currentUser: { uid: 'guest-demo-123' } }),
-            signInAnonymously: () => Promise.resolve({ user: { uid: 'guest-demo-123' } }),
-            signInWithCustomToken: (auth, token) => Promise.resolve({ user: { uid: token.substring(0, 0) + '-user' } }),
-            signOut: () => Promise.resolve(),
-            onAuthStateChanged: (auth, callback) => {
-                // In demo mode, simulate immediate login
-                let role = localStorage.getItem('eBlotter_role') || 'Resident';
-                callback({ uid: role.toLowerCase() + '-user-id' });
-                return () => {}; // Return unsubscribe mock
-            },
-            getFirestore: () => ({}),
-            doc: (db, path, id) => ({ path: `${path}/${id}` }),
-            // Data functions are overridden in the main script for in-memory use
-            addDoc: () => Promise.resolve(),
-            updateDoc: () => Promise.resolve(),
-            deleteDoc: () => Promise.resolve(),
-            onSnapshot: (q, callback) => {
-                // Mock listener handled by JS interval
-                return () => {};
-            },
-            collection: () => ({}),
-            query: () => ({}),
-            getDocs: () => Promise.resolve(),
-            serverTimestamp: () => new Date(),
-            arrayUnion: (item) => item,
-            setLogLevel: () => {},
-        };
-    </script>
-    <!-- Chart.js for Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Crypto-JS for Blockchain Hashing Simulation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;700&display=swap');
-
-        :root {
-            --neon-blue: #00ffff;
-            --neon-purple: #ff00ff;
-            --glass-bg: rgba(30, 41, 59, 0.7); /* slate-800/70 */
-        }
-        
+        /* Custom font for a modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Slate 900 */
-            min-height: 200vh; /* Allow scrolling for parallax */
-            overflow-x: hidden;
-            position: relative;
+            background-color: #f8fafc; /* Light gray background */
         }
 
-        /* 5D Parallax Background Simulation (Layered Depth) */
-        .parallax-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -10;
+        /* Basic box styling, minimal on mobile, then configure borders/shadows for desktop */
+        .flow-box {
+            min-height: 400px; 
+            padding: 1.5rem;
+            border: 2px solid #ccc;
+            /* Flex layout to center content vertically/handle padding */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
-        /* Far background layer: subtle color transitions */
-        .parallax-layer-1 {
-            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 255, 0.05) 0%, transparent 50%),
-                        radial-gradient(circle at 100% 0%, rgba(255, 0, 255, 0.05) 0%, transparent 50%);
-            transform: translateZ(-2px) scale(3); /* Scale up to cover screen */
-            animation: colorShift 20s infinite alternate;
+        /* Mobile Layout: Stacked cards with space and rounded corners */
+        .flow-box {
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Desktop Layout (md and up): Horizontal, contiguous boxes with sharp corners */
+        @media (min-width: 768px) {
+            .flow-container {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr; /* 3 equal columns */
+                gap: 0; /* Remove gap */
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Single shadow around the whole block */
+                border: 2px solid #ccc; /* Border around the whole block */
+            }
+
+            .flow-box {
+                margin-bottom: 0; /* No margin between boxes */
+                border-radius: 0; /* Sharp corners for contiguous look */
+                border: none; /* Remove individual box borders, let the container handle it */
+                min-height: 450px;
+                /* Vertical divider lines between boxes */
+                border-right: 2px solid #ccc;
+            }
+            /* Remove the right border on the last box */
+            .flow-box:last-child {
+                border-right: none;
+            }
+
+            /* Add the horizontal arrow connector */
+            .flow-header {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+            /* Pseudo-element to draw the arrow head bridging the boxes */
+            .flow-box:not(:last-child) .flow-header::after {
+                content: '';
+                position: absolute;
+                right: -2px; /* Position at the border */
+                top: 50%;
+                transform: translateY(-50%) translateX(100%) rotate(-45deg);
+                
+                /* Draw an arrow head */
+                width: 10px;
+                height: 10px;
+                background-color: white; /* Use white to "cut" the border line for the arrow */
+                border-right: 2px solid #ccc;
+                border-bottom: 2px solid #ccc;
+                z-index: 10;
+            }
+
+            /* Mobile Vertical Arrow for stacked design */
+            .mobile-arrow {
+                display: none;
+            }
         }
 
-        /* Closer layer: particle glow simulation */
-        .parallax-layer-2 {
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><radialGradient id="g" r="50%"><stop stop-color="%2300ffff" offset="0%"/><stop stop-color="transparent" offset="100%"/></radialGradient></defs><rect fill="%230f172a" width="100%" height="100%"/><circle cx="10%" cy="10%" r="20" fill="url(%23g)" opacity="0.05"/><circle cx="90%" cy="50%" r="30" fill="url(%23g)" opacity="0.04"/><circle cx="30%" cy="80%" r="25" fill="url(%23g)" opacity="0.06"/></svg>') no-repeat center center;
-            background-size: cover;
-            opacity: 0.5;
-            transform: translateZ(-1px) scale(2);
-        }
-
-        @keyframes colorShift {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
-        }
-
-        /* 5D Card Style: Glassmorphism, Neon Glow */
-        .card-5d {
-            background-color: var(--glass-bg);
-            backdrop-filter: blur(12px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3), 0 0 5px rgba(255, 0, 255, 0.1);
-            transform-style: preserve-3d;
-        }
-
-        /* 5D Card Tilt Effect Target */
-        .card-5d-tilt {
-            transition: transform 0.1s linear, box-shadow 0.3s ease;
-            will-change: transform;
-        }
-
-        .neon-text {
-            color: var(--neon-blue);
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.5);
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        /* Chatbot pulse animation remains the same */
-        .chat-pulse {
-            animation: pulse-glow 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
-        }
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.7); }
-            50% { box-shadow: 0 0 0 20px rgba(0, 255, 255, 0); }
-        }
-
-        /* Custom Scrollbar for 5D */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1e293b; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--neon-purple); }
-
-        /* Loading Animation */
-        .dot-pulse { display: flex; align-items: center; }
-        .dot-pulse > div {
-            width: 8px; height: 8px; border-radius: 50%; margin: 0 4px;
-            background-color: var(--neon-blue);
-            animation: pulse 1s infinite alternate;
-        }
-        .dot-pulse > div:nth-child(2) { animation-delay: 0.2s; }
-        .dot-pulse > div:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes pulse {
-            0% { transform: scale(0.6); opacity: 0.5; }
-            100% { transform: scale(1.2); opacity: 1; }
+        /* Mobile Vertical Arrow for stacked design */
+        @media (max-width: 767px) {
+            .mobile-arrow {
+                height: 3rem;
+                width: 4px;
+                background-color: #3b82f6; 
+                margin: 0 auto 1rem auto;
+                position: relative;
+            }
+            .mobile-arrow::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%) translateY(100%) rotate(45deg);
+                width: 10px;
+                height: 10px;
+                border-right: 4px solid #3b82f6;
+                border-bottom: 4px solid #3b82f6;
+                border-top: 0;
+                border-left: 0;
+            }
         }
     </style>
 </head>
-<body class="p-4 md:p-8 text-white">
+<body class="p-4 md:p-8 min-h-screen">
 
-    <!-- 5D Parallax Background Layers -->
-    <div class="parallax-bg">
-        <div class="parallax-layer parallax-layer-1 absolute inset-0"></div>
-        <div class="parallax-layer parallax-layer-2 absolute inset-0"></div>
-    </div>
-    
-    <div id="app-container" class="max-w-7xl mx-auto relative z-10">
-        
-        <!-- Header & Authentication Status -->
-        <header class="text-center mb-10 p-4 card-5d rounded-xl shadow-2xl">
-            <h1 class="text-5xl font-bold neon-text tracking-widest">
-                Barangay eBlotter 
+    <div class="max-w-7xl mx-auto bg-white rounded-xl p-0 md:p-10">
+
+        <header class="text-center mb-6 md:mb-10 pt-4 md:pt-0">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 tracking-tight mb-2">
+                Barangay eBlotter System Flowchart
             </h1>
-            <p class="text-lg text-gray-300 mt-2">Digital Incident & Complaint Reporting System</p>
-            <p class="text-xs text-gray-500 mt-1">© ${new Date().getFullYear()} Noel Timario. All Rights Reserved.</p>
-            <div id="auth-status" class="mt-4 text-sm text-center">
-                <!-- Status will be dynamically updated here -->
-            </div>
         </header>
-
-        <!-- Main Content Area: Conditional rendering based on role -->
-        <main id="main-content" class="min-h-[60vh] flex flex-col items-center justify-center">
-            <div class="dot-pulse">
-                <div></div><div></div><div></div>
-            </div>
-            <p class="text-gray-400 mt-4">Initializing Secure 5D Matrix (Demo Mode)...</p>
-        </main>
         
-        <!-- Chatbot Container -->
-        <div id="chatbot-container">
-            <button id="chatbot-toggle" class="w-16 h-16 fixed bottom-4 right-4 md:bottom-8 md:right-8 rounded-full bg-slate-900 border-2 border-cyan-400 chat-pulse flex items-center justify-center text-4xl shadow-2xl shadow-cyan-500/50 hover:scale-105 transition-transform z-40" aria-label="Toggle Chatbot">
-                🤖
-            </button>
-            <div id="chatbot-modal" class="hidden fixed bottom-24 right-4 md:bottom-28 md:right-8 w-80 md:w-96 mb-2 card-5d rounded-xl overflow-hidden shadow-2xl shadow-cyan-600/50 flex flex-col h-[60vh] z-50">
-                <div class="p-3 bg-slate-900/90 border-b border-cyan-400/50 flex justify-between items-center">
-                    <h3 class="text-lg font-bold neon-text">Barangay AI</h3>
-                    <div id="voice-status" class="text-xs text-yellow-400 flex items-center cursor-pointer p-1 rounded-md hover:bg-slate-700 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="23"/><line x1="8" x2="16" y1="23" y2="23"/></svg>
-                         <span class="ml-1" id="mic-status">Ready</span>
-                    </div>
-                </div>
-                <div id="chatbot-messages" class="flex-grow p-4 overflow-y-auto space-y-4">
-                    <div class="text-sm text-gray-400">Welcome! I can help you file a complaint, check a case status, or answer FAQs. Pwede rin ako mag-Tagalog!</div>
-                </div>
-                <div class="p-4 border-t border-cyan-400/50 flex">
-                    <input type="text" id="chatbot-input" placeholder="Type your message or use voice..." class="flex-grow p-2 rounded-lg bg-slate-700/50 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 mr-2">
-                    <button id="chatbot-send" class="p-2 rounded-lg bg-cyan-700 hover:bg-cyan-600 transition-colors text-white font-bold transform hover:scale-105" aria-label="Send Message">
-                        Send
-                    </button>
-                </div>
+        <!-- Table Caption 1 (Matches image) -->
+        <p class="text-center text-lg font-semibold text-gray-600 mb-6 md:mb-10">
+            Table 3: Flow Chart
+        </p>
+
+        <!-- Flowchart Container: Horizontal on Desktop, Stacked on Mobile -->
+        <div class="flow-container mx-auto md:max-w-7xl">
+
+            <!-- 1. INPUT STAGE -->
+            <div class="flow-box bg-white">
+                <h2 class="flow-header text-xl font-bold text-gray-800 mb-6 text-center pb-2 border-b">
+                    INPUT
+                </h2>
+                <ul class="list-disc list-inside space-y-3 text-gray-700 ml-4 text-base">
+                    <li>Identification of problems in manual blotter recording.</li>
+                    <li>Data collection from barangay staff and residents via interviews and surveys.</li>
+                    <li>Analysis of data to determine system requirements and desired features.</li>
+                    <li>Existing Barangay Ordinances & Legal Frameworks.</li>
+                </ul>
             </div>
+
+            <!-- Mobile Arrow 1 -->
+            <div class="mobile-arrow"></div>
+
+            <!-- 2. PROCESS STAGE -->
+            <div class="flow-box bg-white">
+                <h2 class="flow-header text-xl font-bold text-gray-800 mb-6 text-center pb-2 border-b">
+                    PROCESS
+                </h2>
+                <ul class="list-disc list-inside space-y-3 text-gray-700 ml-4 text-base">
+                    <li>Design system workflow and interface (UI/UX + ERD).</li>
+                    <li>Agile Iterative Development Model (Plan &rarr; Design &rarr; Develop &rarr; Test &rarr; Evaluate).</li>
+                    <li>Implementation and Testing: unit testing, integration testing, alpha testing, and acceptance testing.</li>
+                    <li>Deployment to local server or cloud technologies.</li>
+                </ul>
+            </div>
+
+            <!-- Mobile Arrow 2 -->
+            <div class="mobile-arrow"></div>
+
+            <!-- 3. OUTPUT STAGE -->
+            <div class="flow-box bg-white">
+                <h2 class="flow-header text-xl font-bold text-gray-800 mb-6 text-center pb-2 border-b">
+                    OUTPUT
+                </h2>
+                <ul class="list-disc list-inside space-y-3 text-gray-700 ml-4 text-base">
+                    <li class="font-semibold">Barangay eBlotter System</li>
+                    <li>A Web-Based Digital Platform to Improve Incident and Complaint Reporting.</li>
+                    <li>Enhance Transparency and Improve Administrative Processes in the Barangay.</li>
+                    <li>User Training & Feedback Integration.</li>
+                </ul>
+            </div>
+            
         </div>
+        <!-- End Flowchart Container -->
+        
+        <!-- Bottom Caption 2 (Matches image) -->
+        <p class="text-center text-lg font-semibold text-gray-600 mt-6 md:mt-2">
+            Flow Chart
+        </p>
     </div>
-
-    <!-- Global Modal for Details/Confirmation (Crucial: Replaces alert/confirm) -->
-    <div id="modal-backdrop" class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div id="modal-content" class="card-5d p-8 rounded-xl w-11/12 max-w-3xl transform scale-100 transition-transform duration-300 shadow-2xl shadow-fuchsia-500/30">
-            <h2 id="modal-title" class="text-3xl font-['Orbitron'] neon-text mb-4">Modal Title</h2>
-            <div id="modal-body" class="text-gray-300 max-h-[70vh] overflow-y-auto space-y-4">
-                <!-- Dynamic content goes here -->
-            </div>
-            <div id="modal-actions" class="mt-6 flex justify-end">
-                 <!-- Default close button if no other actions are present -->
-                 <button onclick="closeModal()" class="px-6 py-2 bg-red-700 hover:bg-red-600 rounded-lg text-white font-bold transition-transform transform hover:scale-105">
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // --- Global Variable Setup (Overridden for Demo Mode) ---
-        const appId = 'demo-app-id';
-        const firebaseConfig = null; // Still null, but ignored
-        const initialAuthToken = null; // Still null, but ignored
-        
-        // --- Globals ---
-        let app, db, auth;
-        let userId = null;
-        let userRole = null; // 'Admin', 'Staff', 'Resident', or 'Guest'
-        let chartInstance = null;
-        
-        // --- In-Memory Data Store & Listener (Replaces Firestore) ---
-        let complaints = [
-            { id: '1', caseId: 'C-98765A', type: 'Noise Violation', location: 'Purok 5, Main Street', narrative: 'Loud karaoke until 3 AM last night. It happens every weekend.', complainantId: 'resident-user-id', complainantRole: 'Resident', status: 'In Investigation', dateFiled: new Date(Date.now() - 86400000).toISOString(), evidenceUrl: `https://placehold.co/200x150/0f172a/fff?text=Evidence+C-98765A`, aiPrediction: 'Noise Violation (Medium)', aiXai: 'Common issue, requires staff intervention.', blockchainHash: '0xabcde12345', auditLog: [{ action: 'FILED', timestamp: new Date(Date.now() - 86400000), hash: '0xabcde12345' }] },
-            { id: '2', caseId: 'C-12345B', type: 'Theft/Robbery', location: 'Market Area', narrative: 'My bicycle was stolen from outside my house this morning. Please help me.', complainantId: 'resident-user-id', complainantRole: 'Resident', status: 'Urgent', dateFiled: new Date(Date.now() - 3600000).toISOString(), evidenceUrl: `https://placehold.co/200x150/0f172a/fff?text=Evidence+C-12345B`, aiPrediction: 'Critical Conflict Zone Alert (URGENT)', aiXai: 'Keyword matching (stolen) triggered high-priority alert.', blockchainHash: '0xdef567890', auditLog: [{ action: 'FILED', timestamp: new Date(Date.now() - 3600000), hash: '0xdef567890' }] },
-            { id: '3', caseId: 'C-54321C', type: 'Domestic Dispute', location: 'Purok 2, Alley 3', narrative: 'Loud arguing and threats heard coming from the house next door. This is the third time this week.', complainantId: 'admin-user-id', complainantRole: 'Admin', status: 'Resolved', dateFiled: new Date(Date.now() - 7200000).toISOString(), evidenceUrl: `https://placehold.co/200x150/0f172a/fff?text=Evidence+C-54321C`, aiPrediction: 'Domestic Conflict (High)', aiXai: 'High severity language detected.', blockchainHash: '0x1a2b3c4d5e', auditLog: [{ action: 'FILED', timestamp: new Date(Date.now() - 7200000), hash: '0x1a2b3c4d5e' }] },
-        ];
-        
-        const updateInMemoryData = () => {
-            // Re-render components immediately to simulate real-time update
-            if (document.getElementById('complaint-list')) renderComplaintList(complaints);
-            if (document.getElementById('analytics-card')) updateAnalytics(complaints);
-            setTimeout(attachTiltEffects, 100); 
-        };
-        
-        // --- Constants ---
-        const COMPLAINTS_COLLECTION_PATH = 'in_memory_complaints';
-        // IMPORTANT: For the AI Chatbot (Section 4) to work, you must provide a valid Gemini API Key here.
-        const GEMINI_API_KEY = ""; 
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
-        const ROLE_COLORS = {
-            'Admin': 'cyan',
-            'Staff': 'yellow',
-            'Resident': 'purple',
-            'Guest': 'gray'
-        };
-
-        // --- Utility Functions ---
-
-        /** Helper for exponential backoff retry for fetch operations. */
-        const withRetry = (fn, retries = 3, delay = 1000) => async (...args) => {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    return await fn(...args);
-                } catch (error) {
-                    console.warn(`Attempt ${i + 1} failed. Retrying in ${delay * (2 ** i)}ms...`);
-                    if (i === retries - 1) {
-                         // Throw the error after the last attempt
-                         throw error;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, delay * (2 ** i)));
-                }
-            }
-        };
-
-        /** Generates a SHA256 hash for Blockchain Simulation. */
-        const createHash = (data) => {
-            return CryptoJS.SHA256(JSON.stringify(data)).toString(CryptoJS.enc.Hex);
-        };
-        
-        /** Shows a custom modal (replaces alert/confirm) */
-        const showModal = (title, contentHTML, actionsHTML = '') => {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-body').innerHTML = contentHTML;
-            const actions = document.getElementById('modal-actions');
-            actions.innerHTML = actionsHTML || `
-                <button onclick="closeModal()" class="px-6 py-2 bg-red-700 hover:bg-red-600 rounded-lg text-white font-bold transition-transform transform hover:scale-105">
-                    Close
-                </button>
-            `;
-            document.getElementById('modal-backdrop').classList.remove('hidden');
-            document.getElementById('modal-backdrop').classList.add('flex');
-        }
-
-        const closeModal = () => {
-            document.getElementById('modal-backdrop').classList.add('hidden');
-            document.getElementById('modal-backdrop').classList.remove('flex');
-        }
-        
-        // --- 5D Mouse Tilt Effect ---
-        const handleMouseTilt = (e) => {
-            const target = e.currentTarget;
-            const rect = target.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const dx = (x - centerX) / centerX;
-            const dy = (y - centerY) / centerY;
-            
-            // Limit rotation to 3 degrees for a subtle depth effect
-            const rotateY = dx * 3; 
-            const rotateX = dy * -3;
-            
-            target.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.005)`;
-        };
-        
-        const attachTiltEffects = () => {
-            document.querySelectorAll('.card-5d-tilt').forEach(card => {
-                // Ensure we only attach if not already attached
-                if (!card.dataset.tiltAttached) {
-                    card.addEventListener('mousemove', handleMouseTilt);
-                    card.addEventListener('mouseleave', () => {
-                        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
-                    });
-                    card.dataset.tiltAttached = true;
-                }
-            });
-        };
-
-        // --- Core Application Logic (Auth and Init) ---
-        
-        window.onload = async () => {
-            // Mock Firebase init for structure
-            app = firebase.initializeApp(firebaseConfig);
-            auth = firebase.getAuth(app);
-            db = firebase.getFirestore(app);
-
-            // Mock auth state change immediately
-            firebase.onAuthStateChanged(auth, (user) => {
-                let currentRole = localStorage.getItem('eBlotter_role');
-                if (!currentRole) {
-                    renderAuthUI();
-                } else {
-                    userRole = currentRole;
-                    userId = currentRole.toLowerCase() + '-user-id';
-                    renderApp(userRole);
-                    updateInMemoryData(); // Initial data load
-                }
-            });
-        };
-        
-        /** Log out function */
-        const handleLogout = async () => {
-            document.getElementById('main-content').innerHTML = `
-                <div class="dot-pulse"><div></div><div></div><div></div></div>
-                <p class="text-gray-400 mt-4">Initiating Logout Protocol...</p>`;
-            
-            // Simulate Firebase logout
-            localStorage.removeItem('eBlotter_role');
-            userRole = 'Guest';
-            userId = null;
-            
-            await new Promise(resolve => setTimeout(resolve, 500)); // Simulating network delay
-            renderAuthUI();
-        };
-        
-        /** Simulated Login for Role Switching Demo */
-        const simulateLogin = async (role) => {
-            document.getElementById('main-content').innerHTML = `
-                <div class="dot-pulse"><div></div><div></div><div></div></div>
-                <p class="text-gray-400 mt-4">Establishing connection for ${role}...</p>`;
-            
-            localStorage.setItem('eBlotter_role', role);
-            userRole = role;
-            userId = role.toLowerCase() + '-user-id';
-            
-            await new Promise(resolve => setTimeout(resolve, 500)); // Simulating network delay
-            renderApp(userRole);
-            updateInMemoryData();
-        };
-        window.simulateLogin = simulateLogin; // Expose globally for HTML onclick
-
-        // --- Complaint CRUD Functions (In-Memory Implementation) ---
-
-        /** Adds a new complaint (Resident) */
-        const addComplaint = async () => {
-            const type = document.getElementById('new-type').value.trim();
-            const location = document.getElementById('new-location').value.trim();
-            const narrative = document.getElementById('new-narrative').value.trim();
-            
-            if (!type || !location || !narrative) {
-                showModal('Missing Fields', '<p>Please fill in Type, Location, and Narrative.</p>');
-                return;
-            }
-
-            const newId = (complaints.length + 1).toString();
-            const caseId = 'C-' + Date.now().toString().slice(-6) + Math.random().toString(36).substring(2, 5).toUpperCase();
-            
-            const newComplaint = {
-                id: newId,
-                caseId, type, location, narrative,
-                complainantId: userId,
-                complainantRole: userRole,
-                status: 'Pending Review',
-                dateFiled: new Date().toISOString(),
-                evidenceUrl: `https://placehold.co/200x150/0f172a/fff?text=Evidence+${caseId}`, 
-            };
-            
-            // 3. AI-Driven Insights Simulation
-            const aiResult = simulateAIPrediction(newComplaint.narrative);
-            newComplaint.aiPrediction = aiResult.prediction;
-            newComplaint.aiXai = aiResult.xai;
-            newComplaint.status = aiResult.prediction.includes('Priority') || aiResult.prediction.includes('Critical') ? 'Urgent' : 'Pending Review';
-
-            // 5. Blockchain Audit Trail Simulation (Initial Block)
-            const blockData = { ...newComplaint, timestamp: Date.now() };
-            const blockHash = createHash(blockData);
-
-            newComplaint.blockchainHash = blockHash;
-            newComplaint.auditLog = [{
-                action: 'FILED',
-                timestamp: new Date(),
-                hash: blockHash
-            }];
-            
-            try {
-                // In-Memory Storage
-                complaints.push(newComplaint);
-                updateInMemoryData();
-                
-                showModal('Success: Complaint Filed', `<p class="text-green-400 text-lg">Your report has been securely filed.</p><p>Case ID: <strong>${caseId}</strong>. Blockchain Verified ✅</p>`);
-                document.getElementById('new-type').value = '';
-                document.getElementById('new-location').value = '';
-                document.getElementById('new-narrative').value = '';
-            } catch (error) {
-                // This shouldn't happen in demo mode, but good practice
-                showModal('Error', `<p class="text-red-400">Failed to file complaint: ${error.message}</p>`);
-            }
-        };
-        window.addComplaint = addComplaint; // Expose globally
-
-        /** Updates an existing complaint (Admin/Staff only) */
-        window.updateComplaintStatus = async (id, newStatus) => {
-            closeModal(); // Close the status selection modal first
-            
-            if (userRole !== 'Admin' && userRole !== 'Staff') {
-                showModal('Access Denied', '<p class="text-red-400">Only Admin and Staff can update records.</p>');
-                return;
-            }
-
-            const complaint = complaints.find(c => c.id === id);
-            if (!complaint) return;
-            
-            complaint.status = newStatus;
-
-            // Blockchain audit log update
-            const blockData = { id, updates: { status: newStatus }, timestamp: Date.now() };
-            const blockHash = createHash(blockData);
-
-            const auditLogEntry = {
-                action: 'STATUS_UPDATE',
-                details: `Status changed to ${newStatus}`,
-                timestamp: new Date(),
-                hash: blockHash,
-                updatedBy: userId,
-            };
-
-            // Ensure auditLog is an array before pushing
-            if (!Array.isArray(complaint.auditLog)) {
-                complaint.auditLog = [];
-            }
-            complaint.auditLog.push(auditLogEntry);
-            complaint.blockchainHash = blockHash; // Update hash for the latest state
-
-            try {
-                updateInMemoryData();
-                showModal('Success', `<p class="text-green-400">Case ${complaint.caseId} status updated to <strong>${newStatus}</strong> and verified on Blockchain ✅.</p>`);
-            } catch (error) {
-                showModal('Error', `<p class="text-red-400">Failed to update complaint: ${error.message}</p>`);
-            }
-        };
-
-        /** Deletes an existing complaint (Admin only) */
-        window.deleteComplaint = (id) => {
-            if (userRole !== 'Admin') {
-                showModal('Access Denied', '<p class="text-red-400">Only Admin can delete records. This action is critical and requires top-level clearance.</p>');
-                return;
-            }
-            
-            showModal('Confirm Deletion', `
-                <p class="text-xl text-red-300 mb-4">CONFIRM DESTRUCT: Case ID: <strong>${id}</strong>. This deletion will be logged as an irreversible, final audit entry.</p>
-            `, `
-                <button onclick="performDeletion('${id}')" class="px-4 py-2 bg-red-800 hover:bg-red-700 rounded-lg text-white font-bold transition-transform transform hover:scale-105 shadow-lg shadow-red-700/40">
-                    Execute Deletion (Admin)
-                </button>
-                <button onclick="closeModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white">
-                    Cancel
-                </button>
-            `);
-        };
-
-        window.performDeletion = async (id) => {
-            closeModal();
-            try {
-                const index = complaints.findIndex(c => c.id === id);
-                if (index > -1) {
-                    complaints.splice(index, 1);
-                }
-                updateInMemoryData();
-                showModal('Deletion Success', `<p class="text-green-400">Case ${id} successfully purged from the active matrix. Audit logged.</p>`);
-            } catch (error) {
-                showModal('Error', `<p class="text-red-400">Failed to delete complaint: ${error.message}</p>`);
-            }
-        }
-
-        /** 3. AI-Driven Insights Simulation */
-        const simulateAIPrediction = (narrative) => {
-            const lowerNarrative = narrative.toLowerCase();
-            let prediction = 'Low Priority Incident';
-            let xai = 'General sentiment analysis and historical data suggest this is a common, low-severity issue.';
-
-            if (lowerNarrative.includes('loud') || lowerNarrative.includes('noise')) {
-                prediction = 'Noise Violation (Medium)';
-            } else if (lowerNarrative.includes('stolen') || lowerNarrative.includes('thief') || lowerNarrative.includes('robbery')) {
-                prediction = 'Priority Theft/Robbery Case (HIGH)';
-                xai = 'Keyword matching (stolen, thief) triggered the high-priority security alert flag.';
-            } else if (lowerNarrative.includes('fight') || lowerNarrative.includes('threat') || lowerNarrative.includes('weapon')) {
-                prediction = 'Critical Conflict Zone Alert (URGENT)';
-                xai = 'NLP engine detected strong conflict vocabulary and immediately flagged for police response.';
-            }
-
-            return { prediction, xai };
-        };
-
-
-        // --- UI Rendering Functions ---
-
-        const renderAuthUI = (message = 'Select your access node:', color = 'cyan') => {
-            document.getElementById('auth-status').innerHTML = '';
-            document.getElementById('main-content').innerHTML = `
-                <div class="flex flex-col items-center">
-                    <h2 class="text-2xl text-${color}-400 mb-8 font-semibold tracking-wider neon-text">
-                        ${message}
-                    </h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        ${['Admin', 'Staff', 'Resident'].map(role => `
-                            <button onclick="simulateLogin('${role}')"
-                                class="flex flex-col items-center justify-center p-6 rounded-xl border-2 transition-all duration-500 transform hover:scale-[1.1] active:scale-[0.95]
-                                card-5d shadow-xl shadow-${ROLE_COLORS[role]}-600/50 border-${ROLE_COLORS[role]}-500/50 text-${ROLE_COLORS[role]}-200">
-                                <span class="text-5xl mb-2">${role === 'Admin' ? '⚡' : role === 'Staff' ? '💼' : '👤'}</span>
-                                <span class="font-bold text-lg">${role} Access</span>
-                                <span class="text-xs mt-1 opacity-70">Initiate Protocol</span>
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        };
-
-        const renderApp = (role) => {
-            const color = ROLE_COLORS[role];
-            document.getElementById('auth-status').innerHTML = `
-                <div class="inline-flex items-center text-lg font-bold text-${color}-400">
-                    <span class="mr-2">${role === 'Admin' ? '⚡' : role === 'Staff' ? '💼' : '👤'}</span>
-                    ACCESS: ${role} | <span class="ml-2 text-sm text-gray-400 break-all">USER ID: ${userId}</span>
-                    <button onclick="handleLogout()" class="ml-4 px-3 py-1 bg-red-700 hover:bg-red-600 rounded-lg text-white text-sm transition-transform transform hover:scale-105">
-                        Logout
-                    </button>
-                </div>
-            `;
-
-            let totalComplaintsCount = complaints.length;
-
-            let mainContentHTML = `
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
-                    <!-- Analytics & Insights (Section 6 & 7) -->
-                    <div id="analytics-card" class="lg:col-span-2 p-6 card-5d card-5d-tilt rounded-xl h-full min-h-[500px]">
-                        <h2 class="text-2xl font-bold neon-text mb-6">Automated Reports & Predictive Analytics</h2>
-                        
-                        <!-- AI Insight Card -->
-                        <div class="p-4 bg-yellow-900/30 border-l-4 border-yellow-400 mb-6 rounded-lg shadow-inner flex items-center">
-                            <span class="text-3xl mr-3">🧠</span>
-                            <div>
-                                <p class="font-bold text-yellow-300">AI Monthly Insight:</p>
-                                <p id="ai-monthly-insight" class="text-sm text-yellow-200">Processing real-time data flow...</p>
-                            </div>
-                        </div>
-
-                        <!-- Chart Area -->
-                        <div class="h-[300px]">
-                            <canvas id="complaintChart"></canvas>
-                        </div>
-
-                        <!-- Predictive Heatmap Simulation -->
-                        <h3 class="text-xl neon-text mt-8 mb-4">Predictive Conflict Heatmap Simulation</h3>
-                        <div class="bg-slate-700/50 p-4 rounded-lg text-gray-400 border border-slate-600">
-                            <p class="font-mono text-sm">Top Conflict Zone (Prediction): <span class="text-red-400 font-bold">Purok 7, Market Area</span> - Expected 20% increase in disputes based on time-series analysis.</p>
-                            <div class="h-2 bg-red-900 mt-2 rounded-full overflow-hidden"><div class="h-full bg-red-500 w-[65%] animate-pulse"></div></div>
-                        </div>
-                    </div>
-
-                    <!-- Complaint Filing/Management Panel -->
-                    <div class="lg:col-span-1 space-y-8">
-                        ${renderComplaintForm(role)}
-                        <div id="complaint-list-container" class="p-6 card-5d card-5d-tilt rounded-xl">
-                            <h2 class="text-2xl font-bold neon-text mb-4">Incident Log (Live) <span class="text-lg text-gray-400">(${totalComplaintsCount})</span></h2>
-                            <div id="complaint-list" class="space-y-4 max-h-[400px] overflow-y-auto">
-                                <!-- List rendered by renderComplaintList() -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('main-content').innerHTML = mainContentHTML;
-            // The initial data load happens after renderApp finishes
-        };
-
-        const renderComplaintForm = (role) => {
-            // Only Residents file, Staff/Admin manage via the list
-            if (role === 'Resident') {
-                return `
-                    <div class="p-6 card-5d card-5d-tilt rounded-xl">
-                        <h2 class="text-2xl font-bold neon-text mb-4">File New Incident (Section 2)</h2>
-                        <div class="space-y-4">
-                            <input type="text" id="new-type" placeholder="Type (e.g., Noise Violation, Theft)" class="w-full p-3 rounded-lg bg-slate-700/50 text-white border border-slate-600 focus:ring-cyan-500 focus:border-cyan-500">
-                            <input type="text" id="new-location" placeholder="Location (Purok/Street)" class="w-full p-3 rounded-lg bg-slate-700/50 text-white border border-slate-600 focus:ring-cyan-500 focus:border-cyan-500">
-                            <textarea id="new-narrative" rows="4" placeholder="Full Incident Narrative (AI uses this for analysis)" class="w-full p-3 rounded-lg bg-slate-700/50 text-white border border-slate-600 focus:ring-cyan-500 focus:border-cyan-500"></textarea>
-                            <button onclick="addComplaint()" class="w-full py-3 bg-green-700 hover:bg-green-600 rounded-lg text-white font-bold transition-all transform hover:scale-[1.02] shadow-md shadow-green-700/40">
-                                Submit & Blockchain Verify
-                            </button>
-                        </div>
-                    </div>
-                `;
-            } else if (role === 'Admin' || role === 'Staff') {
-                return `
-                    <div class="p-6 card-5d card-5d-tilt rounded-xl bg-blue-900/50 border-blue-500/50">
-                        <h2 class="text-2xl font-bold neon-text mb-4">Case Management Status</h2>
-                        <p class="text-gray-300 mb-4">As ${role}, all complaints are accessible in the live log below for review and action. There are <strong class="text-cyan-400">${complaints.length}</strong> active cases.</p>
-                        <button onclick="showModal('Staff Portal', '<h2>Staff/Admin Interface</h2><p>This panel provides full access to the complaint log for status updates and auditing.</p>')" class="w-full py-3 bg-blue-700 hover:bg-blue-600 rounded-lg text-white font-bold transition-all transform hover:scale-[1.02] shadow-md shadow-blue-700/40">
-                            Open Management Tools
-                        </button>
-                    </div>
-                `;
-            }
-            return '';
-        };
-
-        const renderComplaintList = (list) => {
-            const listContainer = document.getElementById('complaint-list');
-            if (!listContainer) return;
-
-            list.sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled));
-            
-            listContainer.innerHTML = `
-                ${list.map(c => {
-                    const isUrgent = c.status.includes('Urgent') || c.status.includes('HIGH');
-                    const bgColor = isUrgent ? 'bg-red-900/50 border-red-500/50' : 'bg-slate-900/50 border-cyan-500/50';
-                    const statusColor = isUrgent ? 'text-red-400' : 'text-green-400';
-                    const hoverClass = userRole === 'Admin' || userRole === 'Staff' ? 'cursor-pointer hover:bg-slate-700/50' : 'cursor-default';
-
-                    return `
-                        <div class="p-4 rounded-xl border-t border-l ${bgColor} transition-all duration-300 transform shadow-lg shadow-slate-900/50 ${hoverClass}" onclick="viewComplaintDetails('${c.id}')">
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold text-gray-200">Case ID: ${c.caseId}</span>
-                                <span class="text-xs ${statusColor} font-mono">${c.status.toUpperCase()}</span>
-                            </div>
-                            <p class="text-sm text-gray-400 mt-1">${c.type} at ${c.location}</p>
-                            <div class="mt-2 text-xs text-green-300 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check mr-1"><path d="M20 13V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7c0 4.7 4 7.5 8 9.5a.5.5 0 0 0 .5.5.5.5 0 0 0 .5-.5c4-2 8-4.8 8-9.5z"/><path d="m9 12 2 2 4-4"/></svg> 
-                                Blockchain Verified
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
-            `;
-            // Update the count in the header if available
-            const totalCountEl = listContainer.closest('#complaint-list-container')?.querySelector('h2 > span');
-            if (totalCountEl) totalCountEl.innerText = `(${list.length})`;
-        };
-        
-        // Detailed View Modal
-        window.viewComplaintDetails = (id) => {
-            const complaint = complaints.find(c => c.id === id);
-            if (!complaint) return;
-
-            const date = new Date(complaint.dateFiled).toLocaleString();
-            const isAdminOrStaff = userRole === 'Admin' || userRole === 'Staff';
-            
-            // Build Audit Log Display
-            const auditLogHtml = complaint.auditLog.map(log => {
-                const logDate = log.timestamp && log.timestamp.toLocaleString ? log.timestamp.toLocaleString() : 'N/A';
-                const actionColor = log.action.includes('FILED') ? 'text-green-400' : log.action.includes('UPDATE') ? 'text-yellow-400' : 'text-red-400';
-                return `
-                    <div class="flex text-xs space-x-2 border-b border-slate-700 pb-1">
-                        <span class="w-24 font-mono ${actionColor} flex-shrink-0">${log.action}</span>
-                        <span class="text-gray-400 flex-grow">${log.details || ''} ${log.updatedBy ? `by ${log.updatedBy.substring(0, 8)}...` : ''}</span>
-                        <span class="text-right text-gray-500 flex-shrink-0">${logDate}</span>
-                    </div>
-                `;
-            }).join('');
-
-            const content = `
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <p><strong>Case ID:</strong> <span class="text-cyan-400 font-mono">${complaint.caseId}</span></p>
-                        <p><strong>Status:</strong> <span class="text-xl text-green-400 font-bold">${complaint.status}</span></p>
-                        <p><strong>Filed By:</strong> ${complaint.complainantRole} (${complaint.complainantId.substring(0, 8)}...)</p>
-                        <p><strong>Date Filed:</strong> ${date}</p>
-                        <p><strong>Type:</strong> ${complaint.type}</p>
-                        <p><strong>Location:</strong> ${complaint.location}</p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-lg neon-text mb-2">Evidence Preview</h4>
-                        <img src="${complaint.evidenceUrl}" alt="Evidence Placeholder" class="w-full h-auto rounded-lg shadow-xl border border-slate-700">
-                    </div>
-                </div>
-                
-                <hr class="border-slate-700 my-4">
-                <p class="mt-4"><strong>Narrative:</strong></p>
-                <div class="bg-slate-700/50 p-3 rounded-lg italic border border-slate-600">${complaint.narrative}</div>
-
-                <h4 class="font-bold text-lg neon-text mt-6">AI-Driven Insights (XAI)</h4>
-                <div class="bg-slate-800/80 p-3 rounded-lg border-l-4 border-yellow-400">
-                    <p class="text-yellow-300"><strong>Prediction:</strong> ${complaint.aiPrediction}</p>
-                    <p class="text-sm text-gray-400 mt-1"><strong>XAI Reason:</strong> ${complaint.aiXai}</p>
-                </div>
-
-                <h4 class="font-bold text-lg neon-text mt-6 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-2 mr-2 text-green-400"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>
-                    Blockchain Audit Trail (Section 5)
-                </h4>
-                <div class="bg-slate-800/80 p-3 rounded-lg border-l-4 border-green-400 text-xs space-y-2 max-h-40 overflow-y-auto">
-                    ${auditLogHtml}
-                    <div class="text-gray-500 pt-2 break-all"><strong>Latest Hash:</strong> ${complaint.blockchainHash}</div>
-                </div>
-            `;
-            
-            let actions = '';
-            if (isAdminOrStaff) {
-                actions = `
-                    <button onclick="showStatusUpdateModal('${id}')" class="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded-lg text-white font-bold transition-transform transform hover:scale-105">
-                        Update Status
-                    </button>
-                    ${userRole === 'Admin' ? `<button onclick="deleteComplaint('${id}')" class="ml-3 px-4 py-2 bg-red-700 hover:bg-red-600 rounded-lg text-white font-bold transition-transform transform hover:scale-105">Delete (Admin)</button>` : ''}
-                `;
-            }
-            actions += `<button onclick="closeModal()" class="ml-3 px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white font-bold transition-transform transform hover:scale-105">Close</button>`;
-
-            showModal(`Case File: ${complaint.caseId}`, content, actions);
-        };
-        window.viewComplaintDetails = viewComplaintDetails;
-        
-        window.showStatusUpdateModal = (id) => {
-             const complaint = complaints.find(c => c.id === id);
-             if (!complaint) return;
-             
-             const statusOptions = ['Pending Review', 'In Investigation', 'Resolved', 'Closed (No Action)', 'Urgent'];
-             
-             const optionsHtml = statusOptions.map(status => `
-                <button onclick="updateComplaintStatus('${id}', '${status}')" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white border border-slate-600 transition-transform transform hover:scale-[1.03] ${complaint.status === status ? 'bg-cyan-600 hover:bg-cyan-500' : ''}">
-                    ${status}
-                </button>
-             `).join('');
-             
-             showModal(`Update Status for ${complaint.caseId}`, `
-                 <p class="text-xl mb-4">Current Status: <strong class="text-cyan-400">${complaint.status}</strong></p>
-                 <p class="mb-3">Select New Status:</p>
-                 <div class="grid grid-cols-2 gap-3">
-                    ${optionsHtml}
-                 </div>
-             `, `<button onclick="closeModal()" class="px-6 py-2 bg-red-700 hover:bg-red-600 rounded-lg text-white font-bold">Cancel</button>`);
-        }
-
-        /** 6. Automated Reports & Analytics (Chart.js) */
-        const updateAnalytics = (data) => {
-            const ctx = document.getElementById('complaintChart')?.getContext('2d');
-            if (!ctx) return;
-            
-            const countsByType = data.reduce((acc, c) => {
-                acc[c.type] = (acc[c.type] || 0) + 1;
-                return acc;
-            }, {});
-            
-            const countsByLocation = data.reduce((acc, c) => {
-                const location = c.location.split(',')[0].trim(); // Use first part of location for grouping
-                acc[location] = (acc[location] || 0) + 1;
-                return acc;
-            }, {});
-
-            const types = Object.keys(countsByType);
-            const counts = Object.values(countsByType);
-            
-            // Simulating a monthly insight
-            const total = data.length;
-            const urgentCount = data.filter(c => c.status.includes('Urgent') || c.status.includes('HIGH')).length;
-            const topLocation = Object.entries(countsByLocation).sort((a, b) => b[1] - a[1])[0]?.[0] || 'No Data';
-
-            document.getElementById('ai-monthly-insight').innerText = 
-                `Total active cases: ${total}. Urgent cases: ${urgentCount}. Top hotspot: ${topLocation}.`;
-                
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: types,
-                    datasets: [{
-                        label: 'Incidents by Type',
-                        data: counts,
-                        backgroundColor: [
-                            'rgba(0, 255, 255, 0.7)', // Cyan
-                            'rgba(255, 0, 255, 0.7)', // Purple
-                            'rgba(255, 255, 0, 0.7)', // Yellow
-                            'rgba(255, 0, 0, 0.7)', // Red
-                        ],
-                        borderColor: [
-                            'rgba(0, 255, 255, 1)',
-                            'rgba(255, 0, 255, 1)',
-                            'rgba(255, 255, 0, 1)',
-                            'rgba(255, 0, 0, 1)',
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 8, // 5D rounded corners for bars
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                            ticks: { color: 'white', font: { family: 'Orbitron' } }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: 'white' }
-                        }
-                    },
-                    plugins: {
-                        legend: { labels: { color: 'white' } },
-                        title: {
-                            display: true,
-                            text: 'Real-Time Complaint Categorization',
-                            color: 'var(--neon-blue)',
-                            font: { size: 18, family: 'Orbitron' }
-                        }
-                    }
-                }
-            });
-        };
-
-        // --- 4. Conversational AI Chatbot (Gemini API) ---
-        
-        let chatbotOpen = false;
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            const toggleButton = document.getElementById('chatbot-toggle');
-            const modal = document.getElementById('chatbot-modal');
-            const sendButton = document.getElementById('chatbot-send');
-            const inputField = document.getElementById('chatbot-input');
-            const messagesContainer = document.getElementById('chatbot-messages');
-
-            if (toggleButton) {
-                toggleButton.onclick = () => {
-                    chatbotOpen = !chatbotOpen;
-                    modal.classList.toggle('hidden', !chatbotOpen);
-                    if (chatbotOpen) toggleButton.classList.remove('chat-pulse');
-                    else toggleButton.classList.add('chat-pulse');
-                };
-            }
-            
-            const sendMessage = async () => {
-                const message = inputField.value.trim();
-                if (!message) return;
-
-                appendMessage(message, 'user');
-                inputField.value = '';
-                
-                // Immediate check for API key
-                if (!GEMINI_API_KEY) {
-                    appendMessage("The Barangay AI is currently offline. Please add your Gemini API Key in the code to activate the service.", 'ai-error');
-                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                    return;
-                }
-
-                const thinkingMessage = appendMessage('', 'ai-thinking');
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-                try {
-                    const responseText = await getGeminiResponse(message);
-                    
-                    thinkingMessage.classList.remove('ai-thinking');
-                    thinkingMessage.classList.add('ai');
-                    // Use a subtle animation for the response text to appear
-                    thinkingMessage.innerHTML = `<span class="font-bold text-cyan-300 mr-2">AI:</span><span class="opacity-0 transition-opacity duration-700">${responseText}</span>`;
-                    setTimeout(() => {
-                        const span = thinkingMessage.querySelector('span:last-child');
-                        if (span) span.classList.remove('opacity-0');
-                    }, 50);
-
-                } catch (error) {
-                    console.error('Gemini API Error:', error); // Log the full error for debugging
-                    thinkingMessage.classList.remove('ai-thinking');
-                    thinkingMessage.classList.add('ai-error');
-                    
-                    let friendlyError = 'Hindi ako makakonekta sa AI Matrix. Pakitiyak na tama ang inyong API key at mayroon kayong koneksyon sa internet.'; 
-                    
-                    if (error.message.includes('403')) {
-                         friendlyError = 'AI Chatbot service failed. Please ensure your Gemini API Key is correctly placed in the code.';
-                    }
-                    
-                    thinkingMessage.innerHTML = `<span class="font-bold text-red-400 mr-2">AI Error:</span> ${friendlyError}`;
-                }
-
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            };
-
-            if (sendButton) sendButton.onclick = sendMessage;
-            if (inputField) inputField.onkeypress = (e) => {
-                if (e.key === 'Enter') sendMessage();
-            };
-
-            /** Appends a message bubble to the chat window */
-            const appendMessage = (text, type) => {
-                const messageEl = document.createElement('div');
-                let classes = 'max-w-[85%] p-3 rounded-xl transition-all duration-300 transform shadow-md';
-                
-                if (type === 'user') {
-                    classes += ' ml-auto bg-purple-700/80 shadow-purple-500/20 text-white border border-purple-500/50 hover:scale-[1.02]';
-                    messageEl.innerHTML = `<span class="font-bold text-purple-300 mr-2">You:</span> ${text}`;
-                } else if (type === 'ai') {
-                    classes += ' mr-auto bg-cyan-700/80 shadow-cyan-500/20 text-white border border-cyan-500/50 hover:scale-[1.02]';
-                    messageEl.innerHTML = `<span class="font-bold text-cyan-300 mr-2">AI:</span> ${text}`;
-                } else if (type === 'ai-thinking') {
-                    classes += ' mr-auto bg-slate-700/80 text-gray-400 flex items-center';
-                    messageEl.innerHTML = `
-                        <span class="font-bold text-cyan-300 mr-2">AI:</span> 
-                        <div class="dot-pulse"><div></div><div></div><div></div></div>
-                    `;
-                } else if (type === 'ai-error') {
-                     classes += ' mr-auto bg-red-900/70 text-white border border-red-500/50';
-                }
-                
-                messageEl.className = classes;
-                messagesContainer.appendChild(messageEl);
-                return messageEl;
-            };
-
-            // Web Speech API for Voice Input
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                const recognition = new SpeechRecognition();
-                recognition.continuous = false;
-                recognition.lang = 'en-US'; 
-
-                document.getElementById('voice-status').onclick = () => {
-                    try {
-                        recognition.start();
-                        document.getElementById('mic-status').innerText = 'LISTENING...';
-                        document.getElementById('voice-status').classList.remove('text-yellow-400');
-                        document.getElementById('voice-status').classList.add('text-red-400', 'animate-pulse');
-                    } catch (e) {
-                         document.getElementById('mic-status').innerText = 'Error';
-                    }
-                };
-
-                recognition.onresult = (event) => {
-                    const speechResult = event.results[0][0].transcript;
-                    inputField.value = speechResult;
-                    document.getElementById('mic-status').innerText = 'Recognized';
-                    sendMessage();
-                };
-
-                recognition.onend = () => {
-                    document.getElementById('mic-status').innerText = 'Ready';
-                    document.getElementById('voice-status').classList.add('text-yellow-400');
-                    document.getElementById('voice-status').classList.remove('text-red-400', 'animate-pulse');
-                };
-            } else {
-                document.getElementById('voice-status').innerHTML = '❌ Voice Not Supported';
-                document.getElementById('voice-status').onclick = null;
-            }
-        });
-
-        /** Calls the Gemini API for Chatbot response */
-        const getGeminiResponse = async (prompt) => {
-            
-            if (!GEMINI_API_KEY) {
-                // Throw specific error if key is missing, allowing the caller (sendMessage) to handle it gracefully
-                throw new Error('Missing API Key. Please add your key to the GEMINI_API_KEY variable.');
-            }
-
-            const systemPrompt = `You are the Barangay eBlotter AI Chatbot, known as 'Barangay AI'. You are helpful, respectful, and designed to assist citizens in the Philippines. Respond in the language of the user (English, Tagalog, or Cebuano). 
-            Your tasks:
-            1. Handle complaint submission (confirm the main issue, location, and date).
-            2. Answer FAQs about the eBlotter system or barangay processes.
-            3. Track case status (Simulate by saying 'Case [ID] is currently Pending Review and assigned to Staff Member [A-101].').
-            4. Keep responses concise and informative.`;
-
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-            };
-            
-            // Define the core fetch logic to be retried
-            const fetchGemini = async () => {
-                const response = await fetch(GEMINI_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                // If the response is not OK (e.g., 429, 500, etc.), throw an error to trigger retry
-                if (!response.ok) {
-                    const errorBody = await response.json();
-                    throw new Error(`API returned status ${response.status}: ${errorBody.error?.message || 'Unknown network error'}`);
-                }
-
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (!text) throw new Error('No text content received from AI.');
-                return text;
-            };
-
-            // Execute the fetch logic with retry mechanism
-            return await withRetry(fetchGemini)();
-        };
-
-    </script>
 </body>
 </html>
