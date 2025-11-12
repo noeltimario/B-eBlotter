@@ -3,204 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barangay eBlotter Business Model Canvas</title>
+    <title>Barangay eBlotter System - Digital Incident Reporting</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom font for a clean, modern look */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* Very light background */
+            background-color: #f0f4f8;
+            color: #1f2937;
         }
-
-        /* Desktop Layout (Main BMC Table Structure) */
-        .canvas-container {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr); /* 5 equal columns for Key Partners, Activities/Resources, Value Prop, Relationships/Channels, Segments */
-            /* CHANGED: R3 (bottom) height is now 'auto' to fit content, fixing the overflow issue. */
-            grid-template-rows: auto auto auto; 
-            gap: 0; /* No gaps between cells (contiguous table look) */
-            border-top: 2px solid #000; /* Main top border */
-            border-left: 2px solid #000; /* Main left border */
+        .container {
             max-width: 1200px;
+        }
+        .hero-bg {
+            background-color: #1e3a8a; /* Dark Blue */
+            background-image: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); /* Blue Gradient */
+        }
+        .cta-button {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.5), 0 4px 6px -2px rgba(59, 130, 246, 0.2);
+        }
+        .feature-card {
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+        .feature-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        /* Workflow Specific Styles for Visual Consistency */
+        .workflow-step {
+            min-height: 80px;
+            width: 100%;
+            max-width: 450px;
             margin: 0 auto;
-        }
-
-        .canvas-module {
             background-color: white;
+            border: 2px solid #000;
+            border-radius: 0.5rem;
             padding: 1rem;
-            border-right: 2px solid #000; /* Vertical divider */
-            border-bottom: 2px solid #000; /* Horizontal divider */
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        /* Grid Area Assignments (Matching the 9-Block Visual Layout) */
-        /* grid-area: row-start / column-start / row-end / column-end */
-        .module-partners { grid-area: 1 / 1 / 3 / 2; } /* Spans R1 & R2, C1 */
-        .module-activities { grid-area: 1 / 2 / 2 / 3; } /* R1, C2 */
-        .module-resources { grid-area: 2 / 2 / 3 / 3; } /* R2, C2 (aligned under Activities) */
-        .module-value { grid-area: 1 / 3 / 3 / 4; } /* Spans R1 & R2, C3 (Centerpiece) */
-        .module-relationships { grid-area: 1 / 4 / 2 / 5; } /* R1, C4 */
-        .module-channels { grid-area: 2 / 4 / 3 / 5; } /* R2, C4 (aligned under Relationships) */
-        .module-segments { grid-area: 1 / 5 / 3 / 6; } /* Spans R1 & R2, C5 */
-        
-        /* FIX: Cost Structure now spans C1, C2, and C3 (3/5ths total) to accommodate longer content. */
-        .module-costs { 
-            grid-area: 3 / 1 / 4 / 4; /* R3, Spans C1-C3 */
-        } 
-        /* FIX: Revenue Streams gets the remaining C4 and C5 (2/5ths total). */
-        .module-revenue { 
-            grid-area: 3 / 4 / 4 / 6; /* R3, Spans C4-C5 */
+        .arrow {
+            width: 4px;
+            height: 30px;
+            background-color: #000;
+            margin: 0.5rem auto;
+            position: relative;
         }
-        
-        .canvas-title {
-            font-weight: 700;
-            font-size: 1.125rem;
-            margin-bottom: 0.75rem;
-            color: #000;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 0.5rem;
+
+        .arrow::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%) rotate(45deg);
+            width: 10px;
+            height: 10px;
+            border-right: 4px solid #000;
+            border-bottom: 4px solid #000;
+            border-top: 0;
+            border-left: 0;
+            background-color: #f0f4f8; /* Match section background */
         }
-        
-        /* Mobile Layout: Stack all nine elements vertically, simple boxes */
-        @media (max-width: 767px) {
-            .canvas-container {
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-                border: none;
-            }
-            .canvas-module {
-                border: 2px solid #000;
-                border-radius: 0.25rem;
-            }
+
+        .workflow-container > .workflow-step:last-of-type + .arrow {
+            display: none;
         }
     </style>
+    <!-- Lucide Icons (Inline SVGs) for visual appeal -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#3b82f6',
+                        'secondary-dark': '#1e3a8a',
+                        'accent-yellow': '#facc15',
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="p-4 md:p-8">
+<body class="antialiased">
 
-    <div class="max-w-7xl mx-auto">
-        <header class="mb-4 md:mb-8">
-            <h1 class="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
-                Business Model Canvas
-            </h1>
-        </header>
-
-        <!-- Business Model Canvas Grid -->
-        <div class="canvas-container mx-auto">
-
-            <!-- 1. Key Partners -->
-            <div class="canvas-module module-partners">
-                <h3 class="canvas-title">Key Partners</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>Barangay Council (Legislation & Adoption)</li>
-                    <li>Local Philippine National Police (PNP) for formal referencing.</li>
-                    <li>Lupong Tagapamayapa (Mediation & Dispute Resolution)</li>
-                    <li>Local IT/Tech Volunteers (Initial Support & Maintenance)</li>
-                </ul>
-            </div>
-
-            <!-- 2. Key Activities -->
-            <div class="canvas-module module-activities">
-                <h3 class="canvas-title">Key Activities</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>Software Development and Maintenance.</li>
-                    <li>User Training (Security & Analytics).</li>
-                    <li>Data Encryption & PDPA Compliance (Philippines Data Privacy Act of 2012).</li>
-                    <li>Continuous Content Updates (Local Ordinances).</li>
-                </ul>
-            </div>
-
-            <!-- 3. Value Proposition (Centerpiece) -->
-            <div class="canvas-module module-value">
-                <h3 class="canvas-title text-center">Value Proposition</h3>
-                <p class="font-bold text-base text-gray-800 mb-2">
-                    Secure, Transparent, and Efficient Incident Reporting.
-                </p>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>24/7 instant reporting access (Mobile-friendly).</li>
-                    <li>Automated report generation (monthly/annual submissions).</li>
-                    <li>Integration of AI-driven insights to identify case trends and high-risk areas.</li>
-                    <li>Empowers officials with reliable data for proactive governance.</li>
-                </ul>
-            </div>
-            
-            <!-- 4. Customer Relationships -->
-            <div class="canvas-module module-relationships">
-                <h3 class="canvas-title">Customer Relationships</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>Real-time status updates via system notifications (SMS/email).</li>
-                    <li>Personalized case management dashboards.</li>
-                    <li>Conversational chatbot interface for submissions and updates.</li>
-                    <li>Formal Orientation Programs at the Barangay Hall.</li>
-                </ul>
-            </div>
-
-            <!-- 5. Customer Segments -->
-            <div class="canvas-module module-segments">
-                <h3 class="canvas-title">Customer Segments</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>Barangay Officials and Staff (Managers/Processors).</li>
-                    <li>Lupong Tagapamayapa (Mediators/Resolvers).</li>
-                    <li>All Barangay Residents (Complainants, respondents, witnesses).</li>
-                </ul>
-            </div>
-            
-            <!-- 6. Key Resources -->
-            <div class="canvas-module module-resources">
-                <h3 class="canvas-title">Key Resources</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>Web/Mobile Platform (Software Asset)</li>
-                    <li>Secure Database and Server Infrastructure.</li>
-                    <li>Skilled Developers and Maintenance Personnel.</li>
-                    <li>Legal/Compliance Expertise (PDPA, Ordinances).</li>
-                </ul>
-            </div>
-
-            <!-- 7. Channels -->
-            <div class="canvas-module module-channels">
-                <h3 class="canvas-title">Channels</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>Official Barangay Website/URL.</li>
-                    <li>Mobile Application Stores (if deployed natively).</li>
-                    <li>Information dissemination via Barangay health centers.</li>
-                    <li>Barangay Social Media Pages.</li>
-                </ul>
-            </div>
-            
-            <!-- 8. Cost Structure (Bottom Left) -->
-            <div class="canvas-module module-costs">
-                <h3 class="canvas-title">Cost Structure</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>Initial System Development and Design.</li>
-                    <li>Server Hosting and Maintenance (Data persistence/security).</li>
-                    <li>Continuous Data Security Measures and Audits (Compliance).</li>
-                    <li>Training Materials and Labor for Staff Onboarding.</li>
-                </ul>
-            </div>
-
-            <!-- 9. Revenue Streams (Bottom Right) -->
-            <div class="canvas-module module-revenue">
-                <h3 class="canvas-title">Funding Model (Revenue Streams)</h3>
-                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
-                    <li>Mandated Annual Barangay Budget Allocation (Public safety/digitalization).</li>
-                    <li>Potential Grants from Local Government Units (LGUs) for e-governance.</li>
-                    <li>Corporate Social Responsibility (CSR) funding from private sector partners.</li>
-                </ul>
-            </div>
-            
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-extrabold text-secondary-dark tracking-wide">eBlotter</h1>
+            <a href="#reporting" class="hidden sm:inline-block px-4 py-2 bg-primary-blue text-white text-sm font-semibold rounded-full shadow-lg hover:bg-blue-700 transition duration-300">
+                Start Report
+            </a>
         </div>
-        <!-- End Business Model Canvas Grid -->
-        
-        <!-- Table Caption -->
-        <p class="text-center text-lg font-semibold text-gray-600 mt-6 md:mt-2">
-            Table 4: Business Model Canvas
-        </p>
+    </nav>
 
-    </div>
+    <!-- Hero Section: Value Proposition & Call to Action -->
+    <section class="hero-bg py-20 md:py-32 text-white">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight">
+                Secure & Instant Incident Reporting
+            </h2>
+            <p class="text-xl sm:text-2xl mb-8 font-light max-w-3xl mx-auto opacity-90">
+                Report incidents and complaints to your Barangay 24/7. Achieve transparency and faster resolution—no paper needed.
+            </p>
+            <a id="reporting" href="#" class="cta-button inline-block bg-accent-yellow text-gray-900 font-bold text-lg px-10 py-4 rounded-full shadow-2xl uppercase tracking-wider">
+                File a Blotter Report Now
+            </a>
+            <p class="text-sm mt-4 opacity-80">
+                Data is protected under the Philippine Data Privacy Act of 2012.
+            </p>
+        </div>
+    </section>
+
+    <!-- Features/Value Section -->
+    <section class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-6">
+            <h3 class="text-3xl font-bold text-center mb-12 text-secondary-dark">Why Switch to eBlotter?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Feature 1: Transparency -->
+                <div class="feature-card p-6 border border-gray-200 rounded-xl shadow-lg text-center">
+                    <svg class="w-12 h-12 text-primary-blue mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <h4 class="text-xl font-semibold mb-3">Full Transparency</h4>
+                    <p class="text-gray-600">Get **real-time status updates** via SMS or email directly to your phone. Track every step of your case's progress.</p>
+                </div>
+
+                <!-- Feature 2: Efficiency -->
+                <div class="feature-card p-6 border border-gray-200 rounded-xl shadow-lg text-center">
+                    <svg class="w-12 h-12 text-primary-blue mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v6"/><path d="M12 18v4"/><path d="M4.93 4.93l4.24 4.24"/><path d="M14.83 14.83l4.24 4.24"/><path d="M2 12h6"/><path d="M18 12h4"/><path d="M4.93 19.07l4.24-4.24"/><path d="M14.83 9.17l4.24-4.24"/></svg>
+                    <h4 class="text-xl font-semibold mb-3">Fast & Efficient</h4>
+                    <p class="text-gray-600">Say goodbye to paper delays. Automated report generation and streamlined submission processes save time for residents and staff.</p>
+                </div>
+
+                <!-- Feature 3: Data-Driven Governance -->
+                <div class="feature-card p-6 border border-gray-200 rounded-xl shadow-lg text-center">
+                    <svg class="w-12 h-12 text-primary-blue mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M7 10v10"/><path d="M17 4v16"/><path d="M2 12h20"/><path d="M10 4v16"/><path d="M14 10v10"/></svg>
+                    <h4 class="text-xl font-semibold mb-3">Proactive Governance</h4>
+                    <p class="text-gray-600">Barangay officials use **AI-driven insights** from blotter data to identify crime trends and allocate resources proactively.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Program Workflow Section -->
+    <section class="py-16 md:py-24 bg-f0f4f8">
+        <div class="container mx-auto px-6">
+            <h3 class="text-3xl font-bold text-center mb-12 text-secondary-dark">The System Journey: Program Workflow</h3>
+            
+            <!-- Workflow Chart Embedded -->
+            <div class="workflow-container mx-auto max-w-lg">
+    
+                <!-- 1. User Access & Onboarding -->
+                <div class="workflow-step">
+                    <p class="text-base font-semibold text-gray-800">1. User Access & Onboarding</p>
+                    <p class="text-sm text-gray-600">Access system via web/app; Account creation or anonymous login; Data privacy consent.</p>
+                </div>
+                <div class="arrow"></div>
+    
+                <!-- 2. Main Menu & Navigation -->
+                <div class="workflow-step">
+                    <p class="text-base font-semibold text-gray-800">2. Main Menu & Navigation</p>
+                    <p class="text-sm text-gray-600">Choose: File New Report, Check Status, Access Resources/FAQ, or Chatbot help.</p>
+                </div>
+                <div class="arrow"></div>
+    
+                <!-- 3. Report Submission Loop -->
+                <div class="workflow-step">
+                    <p class="text-base font-semibold text-gray-800">3. Incident Submission & Tracking</p>
+                    <p class="text-sm text-gray-600">Resident inputs details (guided by chatbot); System auto-assigns Case ID and sends notification.</p>
+                </div>
+                <div class="arrow"></div>
+    
+                <!-- 4. Staff Processing & Action -->
+                <div class="workflow-step">
+                    <p class="text-base font-semibold text-gray-800">4. Staff Processing & Action</p>
+                    <p class="text-sm text-gray-600">Barangay staff review dashboard; Classify report; Forward to Lupong Tagapamayapa or PNP.</p>
+                </div>
+                <div class="arrow"></div>
+    
+                <!-- 5. Status Updates & Resolution -->
+                <div class="workflow-step">
+                    <p class="text-base font-semibold text-gray-800">5. Real-Time Updates & Resolution</p>
+                    <p class="text-sm text-gray-600">System sends status changes (e.g., "Pending Mediation," "Resolved"); Final report archived.</p>
+                </div>
+                <div class="arrow"></div>
+    
+                <!-- 6. Data Collection & Analytics -->
+                <div class="workflow-step">
+                    <p class="text-base font-semibold text-gray-800">6. Data Collection & Analytics</p>
+                    <p class="text-sm text-gray-600">Secure storage of blotter data; System runs AI to identify crime trends and high-risk zones.</p>
+                </div>
+                <div class="arrow"></div>
+    
+                <!-- 7. Outcome Monitoring & Governance -->
+                <div class="workflow-step">
+                    <p class="text-base font-semibold text-gray-800">7. Outcome Monitoring & Governance</p>
+                    <p class="text-sm text-gray-600">Officials view Admin dashboard analytics; Generate automated compliance reports for LGUs.</p>
+                </div>
+                
+            </div>
+            <!-- End Workflow Chart -->
+            
+            <p class="text-center text-md font-medium text-gray-600 mt-6">
+                Figure: Program Workflow (Source: Project Documentation)
+            </p>
+        </div>
+    </section>
+
+    <!-- User Segments Section -->
+    <section class="py-16 md:py-24 bg-white">
+        <div class="container mx-auto px-6">
+            <h3 class="text-3xl font-bold text-center mb-12 text-secondary-dark">Designed for Our Community</h3>
+            
+            <div class="max-w-4xl mx-auto space-y-12">
+                
+                <!-- Resident Focus -->
+                <div class="flex flex-col md:flex-row items-center bg-gray-50 p-6 rounded-xl shadow-lg border-l-4 border-primary-blue">
+                    <div class="md:w-1/3 flex justify-center mb-4 md:mb-0">
+                        <svg class="w-16 h-16 text-accent-yellow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="md:w-2/3 md:pl-8 text-center md:text-left">
+                        <h4 class="text-2xl font-semibold text-gray-800 mb-2">For Barangay Residents</h4>
+                        <p class="text-gray-600">Access the system via our official **website or mobile app**. Use the **conversational chatbot** to quickly file a complaint or check the status of an existing case without leaving your home.</p>
+                    </div>
+                </div>
+
+                <!-- Official Focus -->
+                <div class="flex flex-col md:flex-row items-center bg-gray-50 p-6 rounded-xl shadow-lg border-l-4 border-primary-blue">
+                    <div class="md:w-1/3 flex justify-center mb-4 md:mb-0">
+                        <svg class="w-16 h-16 text-accent-yellow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m20 7-8-4-8 4"/><path d="m4 12 8 4 8-4"/><path d="m4 17 8 4 8-4"/><line x1="12" x2="12" y1="2" y2="22"/></svg>
+                    </div>
+                    <div class="md:w-2/3 md:pl-8 text-center md:text-left">
+                        <h4 class="text-2xl font-semibold text-gray-800 mb-2">For Officials and Lupong Tagapamayapa</h4>
+                        <p class="text-gray-600">Utilize **personalized case management dashboards** for streamlined processing. Generate compliance reports automatically and access training materials for system security and data analytics.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Channels & Partners -->
+    <footer class="bg-secondary-dark py-12 text-white">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Contact & Channels -->
+                <div>
+                    <h4 class="text-xl font-bold mb-4 border-b border-primary-blue pb-2">Connect & Access</h4>
+                    <p class="text-sm mb-3">Access the system through:</p>
+                    <ul class="space-y-2 text-sm">
+                        <li>Official Barangay Website/URL</li>
+                        <li>Mobile App (via App Stores)</li>
+                        <li>Information through Barangay Health Centers</li>
+                    </ul>
+                </div>
+
+                <!-- Partners -->
+                <div>
+                    <h4 class="text-xl font-bold mb-4 border-b border-primary-blue pb-2">Key Partners</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li>Barangay Council & Staff</li>
+                        <li>Local Philippine National Police (PNP)</li>
+                        <li>Lupong Tagapamayapa</li>
+                        <li>Local IT & Tech Volunteers</li>
+                    </ul>
+                </div>
+
+                <!-- Funding -->
+                <div>
+                    <h4 class="text-xl font-bold mb-4 border-b border-primary-blue pb-2">Funding & Compliance</h4>
+                    <p class="text-sm">This project is supported by the Annual Barangay Budget and LGU Grants for e-governance, ensuring free public access.</p>
+                    <p class="text-sm mt-3 font-semibold text-accent-yellow">
+                        Fully compliant with the Philippine Data Privacy Act of 2012.
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-gray-700 text-center text-sm">
+                &copy; 2025 Barangay eBlotter System. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
 </body>
 </html>
