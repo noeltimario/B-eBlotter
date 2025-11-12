@@ -3,316 +3,552 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detailed Capstone Project Gantt Chart (Barangay eBlotter System - COMPLETE)</title>
-    <!-- Load Tailwind CSS -->
+    <title>Barangay eBlotter: Digital Incident & Complaint Reporting System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Excel Style Overrides */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f0f0; 
-        }
-        .gantt-container {
-            overflow-x: auto;
-            max-width: 100%;
-        }
-        .gantt-grid {
-            min-width: 1000px; /* Adjusted width for 4 months */
-            position: relative;
-            border: 1px solid #999; 
-            background-color: #fff;
-            border-collapse: collapse;
-        }
-        .task-row {
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #ccc; 
-        }
-        /* Excel Header Styling */
-        .excel-header {
-            background-color: #e6e6e6; 
-            font-weight: 700;
-            color: #333;
-            border-right: 1px solid #999; 
-            padding: 8px 10px;
-            font-size: 0.875rem;
-            border-bottom: 2px solid #999; 
-        }
-        .phase-header {
-            background-color: #c9e0f6; /* Light Blue for Phase Headers */
-            font-weight: 700;
-            color: #1e3a8a;
-            font-size: 0.9rem;
-        }
-        .task-info {
-            flex-shrink: 0;
-            width: 300px; /* Wider for detailed task names */
-            padding: 5px 10px;
-            font-size: 0.875rem;
-            background-color: #fff;
-            z-index: 2;
-            border-right: 1px solid #ccc;
-        }
-        .role-info {
-            flex-shrink: 0;
-            width: 120px; 
-            padding: 5px 10px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #1e3a8a;
-            background-color: #f5f5f5; 
-            z-index: 2;
-            border-right: 1px solid #ccc;
-        }
-        .task-bar-area {
-            flex-grow: 1;
-            /* 4 months: August (partial), September, October, November (partial) */
-            grid-template-columns: repeat(4, minmax(140px, 1fr)); 
-            display: grid;
-            gap: 0; 
-            padding: 5px 0;
-            min-width: 560px; /* 4 * 140px */
-            position: relative;
-            border-left: 1px solid #999; 
-        }
-        .month-header {
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 6px 0;
-            color: #333;
-            background-color: #dcdcdc; 
-            border-right: 1px solid #999; 
-        }
-        .time-cell {
-            height: 25px; /* Slightly shorter row height */
-            position: relative;
-            border-right: 1px solid #eee; 
-        }
-        .task-bar {
-            position: absolute;
-            height: 80%; 
-            top: 10%;
-            border-radius: 2px; 
-            box-shadow: none; 
-            transition: all 0.2s;
-            cursor: help;
-            border: 1px solid rgba(0,0,0,0.1); 
-            background-color: #5cb85c; /* Default Green for visibility */
-        }
-        /* Color classes - Flat, standard chart colors */
-        .bar-complete { background-color: #5cb85c; } /* Solid Green */
-        .bar-future { background-color: #a0a0a0; } /* Solid Medium Grey */
-        
-        /* Today Line */
-        #today-line {
-            position: absolute;
-            top: 0;
-            left: 0; 
-            width: 2px; 
-            height: 100%;
-            background-color: #d9534f; /* Solid Red */
-            z-index: 10;
-            pointer-events: none;
-            box-shadow: none;
-            border-radius: 0;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f7fafc; }
+        .blotter-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .blotter-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .badge-pending { background-color: #fbd38d; color: #975a16; }
+        .badge-mediation { background-color: #90cdf4; color: #2c5282; }
+        .badge-resolved { background-color: #a7f3d0; color: #065f46; }
+        .badge-referred { background-color: #fed7d7; color: #9b2c2c; }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body>
 
-    <div class="max-w-7xl mx-auto bg-white shadow-none p-6 sm:p-10 border border-gray-400">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">Barangay eBlotter System Gantt Chart (Project Complete)</h1>
-        <p class="text-green-600 font-semibold mb-6 text-sm bg-green-50 p-2 rounded-lg border border-green-200">
-            **Project Completion Achieved!** Timeline: **August 23 – November 13, 2025**. Today's Date: **November 13, 2025**.
-        </p>
-
-        <div class="gantt-container">
-            <div id="gantt-chart" class="gantt-grid">
-                
-                <!-- Headers -->
-                <div class="flex task-row sticky top-0 z-20">
-                    <div class="excel-header w-[300px] text-left">Task ID / Task Name</div>
-                    <div class="excel-header w-[120px] text-left">Task Lead(s)</div>
-                    <div class="task-bar-area grid grid-cols-4 border-l-0">
-                        <div class="month-header">August 2025 (Partial)</div>
-                        <div class="month-header">September 2025</div>
-                        <div class="month-header">October 2025</div>
-                        <div class="month-header border-r-0">November 2025 (Partial)</div>
-                    </div>
-                </div>
-                
-                <!-- Tasks will be added here by JavaScript -->
-            </div>
-        </div>
-
-        <div class="mt-8 p-4 bg-gray-100 rounded-sm border border-gray-300">
-            <h3 class="text-md font-semibold mb-2 text-gray-700">Status Legend</h3>
-            <div class="flex flex-wrap gap-6 text-sm text-gray-600">
-                <div class="flex items-center"><span class="w-4 h-3 rounded-sm bar-complete mr-2 border"></span> **Complete** (All Tasks Finished)</div>
-                <div class="flex items-center"><div class="w-4 h-3 mr-2 bg-red-600"></div> **Current Date** (Nov 13, 2025 - Project End)</div>
-            </div>
-        </div>
+    <div id="app" class="min-h-screen p-4 sm:p-8 bg-gray-50">
+        <!-- Application Content will be rendered here -->
     </div>
 
-    <script>
-        // --- Configuration Dates (Updated for Project Completion on Nov 13) ---
-        const TODAY = new Date('2025-11-13T00:00:00'); // Setting today to the final day of the project
-        const START_DATE = new Date('2025-08-23T00:00:00'); 
-        const END_DATE = new Date('2025-11-13T00:00:00');   
-        const MS_PER_DAY = 1000 * 3600 * 24;
+    <!-- Firebase Imports (Must be type="module") -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, updateDoc, onSnapshot, collection, query, where, serverTimestamp, setLogLevel, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Calculate total days in the visualization period (83 days)
-        const totalDurationDays = (END_DATE.getTime() - START_DATE.getTime()) / MS_PER_DAY + 1;
+        // --- GLOBAL VARIABLES (MANDATORY USE) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // Helper function to create Date objects from 'YYYY-MM-DD' strings
-        const date = (str) => new Date(str + 'T00:00:00'); 
-        
-        // --- Gantt Chart Data: Specific to Web-Based Barangay eBlotter System ---
-        const rawTasks = [
-            { id: 'PROJECT', name: 'Barangay eBlotter System (Web)', isPhase: true },
-            
-            // Phase 2: Design 
-            { id: '2', name: 'System Analysis & Design for eBlotter', isPhase: true },
-            { id: '2.3', name: 'Web UI/UX Prototyping (Dashboard, Blotter Entry, Reports)', start: date('2025-08-23'), end: date('2025-08-29'), roles: 'Alcoseba' },
-            { id: '2.4', name: 'Architectural Design (Selecting Web Tech Stack & Server Architecture)', start: date('2025-08-23'), end: date('2025-08-30'), roles: 'Garin' },
-            
-            // Phase 3: Development & Implementation 
-            { id: '3', name: 'Development & Implementation (Web)', isPhase: true },
-            { id: '3.1', name: 'Server-side & Database Integration (Blotter Record Mgmt)', start: date('2025-09-01'), end: date('2025-09-20'), roles: 'Garin' },
-            { id: '3.3', name: 'Front-end Development (Web Interface & User Authentication)', start: date('2025-09-01'), end: date('2025-10-10'), roles: 'Garin/Alcoseba' },
-            { id: '3.4', name: 'Module Integration (Connecting UI, API, and Database)', start: date('2025-10-20'), end: date('2025-10-31'), roles: 'Garin' },
-            
-            // Phase 4: Testing & Quality Assurance 
-            { id: '4', name: 'Testing & Quality Assurance', isPhase: true },
-            { id: '4.1', name: 'Unit Testing (Functions for saving/retrieving Blotter data)', start: date('2025-11-01'), end: date('2025-11-03'), roles: 'Garin' },
-            { id: '4.2', name: 'Integration Testing (API to Web Interface Functionality)', start: date('2025-11-04'), end: date('2025-11-06'), roles: 'Timario' },
-            { id: '4.3', name: 'Alpha Testing (Internal Barangay Staff Review)', start: date('2025-11-07'), end: date('2025-11-10'), roles: 'Garin/Alcoseba' },
-            // This final task is now marked complete as of Nov 13.
-            { id: '4.4', name: 'Accepting Testing (User Feedback & Final Web Deployment)', start: date('2025-11-11'), end: date('2025-11-13'), roles: 'Timario' },
-        ];
+        // --- GLOBAL STATE ---
+        let app = null;
+        let db = null;
+        let auth = null;
+        let userId = null;
+        let blotters = [];
+        let view = 'home'; // 'home', 'report', 'dashboard'
+        let currentRole = 'Citizen'; // 'Citizen', 'Staff', 'Captain'
+        let modal = {
+            isOpen: false,
+            title: '',
+            message: '',
+            onConfirm: null,
+            confirmText: 'Confirm'
+        };
 
-        // Format dates for display
-        const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const STATUS_OPTIONS = ['Pending', 'Processing', 'In Mediation', 'Referred to PNP', 'Resolved'];
 
-        function getTaskStatus(task) {
-            if (task.isPhase) return 'phase';
-            
-            // Task is completed if its end date is on or before today (Nov 13)
-            if (task.end.getTime() <= TODAY.getTime()) {
-                return 'complete';
+        // --- UTILITY FUNCTIONS ---
+
+        // Simple utility to format the status into a colored badge
+        const getStatusBadge = (status) => {
+            let colorClass = 'badge-pending';
+            if (status.includes('Mediation')) colorClass = 'badge-mediation';
+            else if (status.includes('Resolved')) colorClass = 'badge-resolved';
+            else if (status.includes('PNP')) colorClass = 'badge-referred';
+            return `<span class="px-3 py-1 text-xs font-semibold rounded-full ${colorClass}">${status}</span>`;
+        };
+
+        const formatDate = (timestamp) => {
+            if (timestamp && timestamp.toDate) {
+                return timestamp.toDate().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             }
-            // If we are on Nov 13, there should be no future tasks.
-            return 'future';
+            return 'N/A';
+        };
+
+        // --- FIREBASE INITIALIZATION & AUTHENTICATION ---
+
+        async function setupFirebase() {
+            try {
+                // setLogLevel('Debug'); // Uncomment for debugging
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // Use the provided custom token for sign-in or sign in anonymously
+                await new Promise((resolve) => {
+                    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                        if (!user) {
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken).catch(e => {
+                                    console.error("Custom token sign-in failed, signing in anonymously:", e);
+                                    return signInAnonymously(auth);
+                                });
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        }
+                        userId = auth.currentUser?.uid || 'anonymous';
+                        console.log('Firebase initialized. User ID:', userId);
+                        resolve();
+                        unsubscribe();
+                    });
+                });
+
+                startBlotterListener();
+
+            } catch (e) {
+                console.error("Error setting up Firebase:", e);
+                renderApp(); // Render even if initialization fails to show error
+            }
         }
 
-        function getTaskBarClass(status) {
-            // Since all tasks are complete, we only need the complete class
-            return 'bar-complete'; 
-        }
+        // --- FIRESTORE DATA HANDLING ---
 
-        function renderGanttChart() {
-            const chartDiv = document.getElementById('gantt-chart');
-            
-            // Remove previous tasks (keep header)
-            const taskHeader = chartDiv.querySelector('.task-row');
-            while (taskHeader.nextSibling) {
-                taskHeader.nextSibling.remove();
-            }
-            
-            rawTasks.forEach(task => {
-                const status = getTaskStatus(task);
+        const getBlottersCollectionRef = () => {
+            // Public data path: /artifacts/{appId}/public/data/blotters
+            return collection(db, `artifacts/${appId}/public/data/blotters`);
+        };
 
-                // 1. Create the Task Row container
-                const row = document.createElement('div');
-                row.className = `task-row ${task.isPhase ? 'phase-header' : 'hover:bg-gray-50'}`;
-                
-                // 2. Create the Task Info column (ID & Name)
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'task-info ' + (task.isPhase ? 'phase-header' : 'text-gray-800 font-normal');
-                infoDiv.textContent = `${task.id}. ${task.name}`;
-                
-                // Add dates for non-phase rows
-                if (!task.isPhase) {
-                    infoDiv.innerHTML += `
-                        <div class="text-xs text-gray-500 font-normal mt-0.5">
-                            ${formatDate(task.start)} - ${formatDate(task.end)}
-                        </div>
-                    `;
-                }
+        function startBlotterListener() {
+            if (!db) return;
 
+            const blottersRef = getBlottersCollectionRef();
+            const q = query(blottersRef); // Fetch all blotters
 
-                // 3. Create the Role Info column
-                const roleDiv = document.createElement('div');
-                roleDiv.className = 'role-info ' + (task.isPhase ? 'phase-header' : 'text-xs');
-                roleDiv.textContent = task.roles || '';
-                
-                // 4. Create the Task Bar Area (Grid)
-                const barArea = document.createElement('div');
-                barArea.className = 'task-bar-area border-l border-r-0 border-gray-400';
-                
-                // Add empty cells for visualization alignment (4 months)
-                for (let i = 1; i <= 4; i++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'time-cell';
-                    barArea.appendChild(cell);
-                }
+            // Real-time listener
+            onSnapshot(q, (snapshot) => {
+                blotters = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })).sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate()); // Sort by newest first
 
-                // 5. Calculate and create the Task Bar visualization
-                if (!task.isPhase) {
-                    const bar = document.createElement('div');
-                    bar.className = 'task-bar ' + getTaskBarClass(status);
-                    
-                    const startOffsetDays = (task.start.getTime() - START_DATE.getTime()) / MS_PER_DAY;
-                    const durationDays = (task.end.getTime() - task.start.getTime()) / MS_PER_DAY + 1;
-
-                    const startPosition = (startOffsetDays / totalDurationDays) * 100;
-                    const barWidth = (durationDays / totalDurationDays) * 100;
-
-                    bar.style.left = `${startPosition}%`;
-                    bar.style.width = `${barWidth}%`;
-                    
-                    bar.title = `${task.id}. ${task.name} \nLead: ${task.roles} \nStatus: ${status.toUpperCase()} \n Start: ${formatDate(task.start)} \n End: ${formatDate(task.end)}`;
-
-                    barArea.appendChild(bar);
-                }
-
-                // 6. Assemble the row
-                row.appendChild(infoDiv);
-                row.appendChild(roleDiv); 
-                row.appendChild(barArea);
-                chartDiv.appendChild(row);
+                renderApp();
+            }, (error) => {
+                console.error("Error listening to blotter data:", error);
             });
+        }
 
-            // 7. Add the "Today" line
-            let todayLine = document.getElementById('today-line');
-            if (!todayLine) {
-                todayLine = document.createElement('div');
-                todayLine.id = 'today-line';
-                chartDiv.appendChild(todayLine);
-            }
-            
-            const timeDiff = TODAY.getTime() - START_DATE.getTime();
-            const daysPassed = timeDiff / MS_PER_DAY;
-            
-            let todayPosition = (daysPassed / totalDurationDays) * 100;
-            
-            if (todayPosition < 0) todayPosition = 0;
-            if (todayPosition > 100) todayPosition = 100;
+        async function submitNewBlotter(formData) {
+            if (!db) return showModal('Error', 'Database not connected. Please try again.');
 
-            const taskInfoWidth = document.querySelector('.task-info')?.offsetWidth || 300;
-            const roleInfoWidth = document.querySelector('.role-info')?.offsetWidth || 120;
-            const totalBarArea = document.querySelector('.task-bar-area');
-            
-            if (totalBarArea) {
-                const chartLeftOffset = taskInfoWidth + roleInfoWidth + (todayPosition / 100) * totalBarArea.offsetWidth;
-                todayLine.style.left = `${chartLeftOffset}px`;
+            const blotterData = {
+                ...formData,
+                reporterId: userId,
+                status: 'Pending',
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+                blotterId: `BRGY-${Date.now().toString().slice(-6)}` // Simple unique ID
+            };
+
+            try {
+                const docRef = await addDoc(getBlottersCollectionRef(), blotterData);
+                showModal('Success!', `Your report has been submitted. Case ID: ${blotterData.blotterId} (Ref: ${docRef.id})`);
+                setView('home');
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showModal('Submission Failed', 'An error occurred while submitting your report. Please check the console.');
             }
         }
 
-        window.addEventListener('resize', renderGanttChart);
-        document.addEventListener('DOMContentLoaded', renderGanttChart);
+        async function updateBlotter(blotterId, updates) {
+            if (!db) return showModal('Error', 'Database not connected.');
+
+            try {
+                const docRef = doc(getBlottersCollectionRef(), blotterId);
+                await updateDoc(docRef, {
+                    ...updates,
+                    updatedAt: serverTimestamp()
+                });
+                showModal('Update Success', `Blotter ID ${blotterId} has been updated.`);
+            } catch (e) {
+                console.error("Error updating document: ", e);
+                showModal('Update Failed', 'An error occurred while updating the blotter.');
+            }
+        }
+
+        // --- MODAL HANDLING (Custom instead of alert/confirm) ---
+
+        function showModal(title, message, onConfirm = null, confirmText = 'Confirm') {
+            modal = { isOpen: true, title, message, onConfirm, confirmText };
+            renderApp();
+        }
+
+        function closeModal() {
+            modal = { isOpen: false, title: '', message: '', onConfirm: null, confirmText: 'Confirm' };
+            renderApp();
+        }
+
+        // --- RENDER FUNCTIONS ---
+
+        function setView(newView) {
+            view = newView;
+            renderApp();
+        }
+
+        function setRole(newRole) {
+            currentRole = newRole;
+            setView('home');
+        }
+
+        function App() {
+            let content;
+
+            switch (view) {
+                case 'report':
+                    content = ReportIncidentForm();
+                    break;
+                case 'dashboard':
+                    content = StaffDashboard();
+                    break;
+                case 'citizen-tracker':
+                    content = CitizenTracker();
+                    break;
+                case 'home':
+                default:
+                    content = MainHomeView();
+                    break;
+            }
+
+            return `
+                <header class="bg-blue-800 text-white p-6 rounded-b-xl shadow-lg mb-8">
+                    <h1 class="text-3xl font-bold tracking-tight">Barangay eBlotter: Digital Incident & Complaint Reporting System</h1>
+                    <p class="text-blue-200 mt-1">Efficiently manage incident reports and community complaints.</p>
+                </header>
+
+                <main class="max-w-7xl mx-auto">
+                    ${HeaderNavigation()}
+                    <div class="mt-8 bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-100">
+                        ${content}
+                    </div>
+                    ${CustomModal()}
+                </main>
+            `;
+        }
+
+        function HeaderNavigation() {
+            const navItems = [
+                { name: 'Home', view: 'home', role: 'Any' },
+                { name: 'File New Report', view: 'report', role: 'Citizen' },
+                { name: 'My Reports (Citizen)', view: 'citizen-tracker', role: 'Citizen' },
+                { name: 'Staff Dashboard', view: 'dashboard', role: 'Staff' },
+                { name: 'Official Dashboard', view: 'dashboard', role: 'Captain' },
+            ];
+
+            const roleOptions = ['Citizen', 'Staff', 'Captain'];
+
+            return `
+                <div class="flex flex-col sm:flex-row justify-between items-center bg-white p-4 rounded-xl shadow-md mb-6 border border-blue-100">
+                    <nav class="flex flex-wrap gap-2 text-sm font-medium">
+                        ${navItems.filter(item => item.role === 'Any' || item.role === currentRole).map(item => `
+                            <button onclick="window.setView('${item.view}')"
+                                class="px-4 py-2 rounded-lg transition-colors duration-200 
+                                ${view === item.view ? 'bg-blue-600 text-white shadow-md' : 'text-blue-600 hover:bg-blue-50'}">
+                                ${item.name}
+                            </button>
+                        `).join('')}
+                    </nav>
+                    <div class="mt-3 sm:mt-0 flex items-center space-x-2 text-sm text-gray-700">
+                        <span>Current Role:</span>
+                        <select onchange="window.setRole(this.value)" class="p-2 border border-gray-300 rounded-lg text-gray-800 font-semibold bg-white shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            ${roleOptions.map(role => `
+                                <option value="${role}" ${currentRole === role ? 'selected' : ''}>${role}</option>
+                            `).join('')}
+                        </select>
+                        <span class="ml-4 text-xs text-gray-500 hidden sm:inline">User ID: ${userId.substring(0, 8)}...</span>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        function MainHomeView() {
+            return `
+                <div class="text-center py-12">
+                    <h2 class="text-4xl font-extrabold text-gray-900 mb-4">Welcome to Barangay eBlotter</h2>
+                    <p class="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">Your digital portal for incident reporting and case management within the Barangay.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-blue-50 p-6 rounded-xl shadow-md border-t-4 border-blue-500">
+                            <h3 class="text-xl font-semibold text-blue-800 mb-3">Citizen Portal</h3>
+                            <p class="text-gray-600 mb-4">Quickly file a new report or check the status of a pending case.</p>
+                            <button onclick="window.setView('report')" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-150 shadow-lg">File Report</button>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-xl shadow-md border-t-4 border-green-500">
+                            <h3 class="text-xl font-semibold text-green-800 mb-3">Staff/Official Access</h3>
+                            <p class="text-gray-600 mb-4">Access the dashboard to process new incidents and manage resolutions.</p>
+                            <button onclick="window.setView('dashboard')" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-150 shadow-lg">Go to Dashboard</button>
+                        </div>
+                        <div class="bg-yellow-50 p-6 rounded-xl shadow-md border-t-4 border-yellow-500">
+                            <h3 class="text-xl font-semibold text-yellow-800 mb-3">System Metrics</h3>
+                            <p class="text-gray-600 mb-4">View real-time statistics on case load and resolution rates (Staff/Captain role required).</p>
+                            <button onclick="window.setView('dashboard')" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition duration-150 shadow-lg">View Analytics</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function ReportIncidentForm() {
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const formData = {
+                    incidentType: form.incidentType.value,
+                    details: form.details.value,
+                    location: form.location.value,
+                    contactName: form.contactName.value,
+                    contactNumber: form.contactNumber.value,
+                    isAnonymous: form.isAnonymous.checked
+                };
+                window.submitNewBlotter(formData);
+                form.reset();
+            };
+
+            // Attach event listener after rendering
+            setTimeout(() => {
+                const formElement = document.getElementById('reportForm');
+                if (formElement) formElement.onsubmit = handleSubmit;
+            }, 0);
+
+            return `
+                <div>
+                    <h2 class="text-3xl font-bold text-blue-800 mb-6 border-b pb-3">File a New Blotter Report</h2>
+                    <p class="text-gray-600 mb-6">Please provide accurate details about the incident. Your information is confidential.</p>
+                    
+                    <form id="reportForm" class="space-y-6">
+                        <div>
+                            <label for="incidentType" class="block text-sm font-medium text-gray-700">Incident Type</label>
+                            <select id="incidentType" name="incidentType" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- Select Type --</option>
+                                <option value="Noise Disturbance">Noise Disturbance</option>
+                                <option value="Petty Theft">Petty Theft</option>
+                                <option value="Boundary Dispute">Boundary Dispute</option>
+                                <option value="Physical Altercation">Physical Altercation</option>
+                                <option value="Other Complaint">Other Complaint</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="location" class="block text-sm font-medium text-gray-700">Incident Location / Address</label>
+                            <input type="text" id="location" name="location" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" placeholder="Street name, landmark, or specific address">
+                        </div>
+                        <div>
+                            <label for="details" class="block text-sm font-medium text-gray-700">Incident Details (What, When, Who)</label>
+                            <textarea id="details" name="details" rows="5" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500" placeholder="Describe the incident in detail"></textarea>
+                        </div>
+
+                        <fieldset class="border border-gray-200 p-4 rounded-lg">
+                            <legend class="text-base font-medium text-gray-900 px-2">Contact Information (Required for follow-up)</legend>
+                            <div class="mt-4 space-y-4">
+                                <div>
+                                    <label for="contactName" class="block text-sm font-medium text-gray-700">Your Full Name</label>
+                                    <input type="text" id="contactName" name="contactName" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label for="contactNumber" class="block text-sm font-medium text-gray-700">Mobile Number</label>
+                                    <input type="tel" id="contactNumber" name="contactNumber" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="isAnonymous" name="isAnonymous" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                    <label for="isAnonymous" class="ml-2 block text-sm text-gray-900">Keep my identity confidential from the other party (Barangay Staff will still see your name)</label>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <button type="submit" class="w-full py-3 px-6 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+                            Submit Blotter Report
+                        </button>
+                    </form>
+                </div>
+            `;
+        }
+
+        function CitizenTracker() {
+            const userReports = blotters.filter(b => b.reporterId === userId);
+
+            return `
+                <div>
+                    <h2 class="text-3xl font-bold text-blue-800 mb-6 border-b pb-3">My Submitted Reports (Citizen Tracker)</h2>
+                    <p class="text-gray-600 mb-6">Reports submitted using this device/session (User ID: ${userId.substring(0, 8)}...).</p>
+
+                    <div class="space-y-4">
+                        ${userReports.length === 0 ? `<p class="text-gray-500 italic">No reports found for your user ID.</p>` : ''}
+                        ${userReports.map(blotter => `
+                            <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h3 class="text-xl font-semibold text-gray-800">${blotter.incidentType} (${blotter.blotterId})</h3>
+                                    ${getStatusBadge(blotter.status)}
+                                </div>
+                                <p class="text-gray-500 mb-2 text-sm">Filed on: ${formatDate(blotter.createdAt)} | Last Update: ${formatDate(blotter.updatedAt)}</p>
+                                <p class="text-gray-700 text-sm italic">${blotter.details.substring(0, 150)}...</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function StaffDashboard() {
+            return `
+                <div>
+                    <h2 class="text-3xl font-bold text-green-800 mb-6 border-b pb-3">${currentRole} Dashboard</h2>
+                    <p class="text-gray-600 mb-6">Total Reports: <span class="font-bold text-lg text-green-700">${blotters.length}</span></p>
+
+                    <div class="space-y-6">
+                        ${blotters.length === 0 ? `<p class="text-gray-500 italic">No blotter records found.</p>` : ''}
+                        ${blotters.map(blotter => StaffBlotterCard(blotter)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function StaffBlotterCard(blotter) {
+            const handleUpdateStatus = (e) => {
+                const newStatus = e.target.value;
+                if (newStatus && newStatus !== blotter.status) {
+                    showModal(
+                        'Confirm Status Update',
+                        `Are you sure you want to change the status of Blotter ${blotter.blotterId} to "${newStatus}"?`,
+                        () => {
+                            window.updateBlotter(blotter.id, { status: newStatus });
+                            closeModal();
+                        },
+                        'Update Status'
+                    );
+                }
+            };
+
+            const handleUpdateResolution = () => {
+                const notesInput = document.getElementById(`notes-${blotter.id}`);
+                const notes = notesInput ? notesInput.value : '';
+
+                showModal(
+                    'Finalize Case Resolution',
+                    `Confirming resolution and notes for Blotter ${blotter.blotterId}. This action is logged.`,
+                    () => {
+                        window.updateBlotter(blotter.id, { resolutionNotes: notes, status: 'Resolved' });
+                        closeModal();
+                    },
+                    'Finalize Resolution'
+                );
+            }
+
+
+            // Attach event listeners after rendering
+            setTimeout(() => {
+                const selectElement = document.getElementById(`status-select-${blotter.id}`);
+                if (selectElement) selectElement.onchange = handleUpdateStatus;
+
+                const resolveButton = document.getElementById(`resolve-btn-${blotter.id}`);
+                if (resolveButton) resolveButton.onclick = handleUpdateResolution;
+            }, 0);
+
+
+            return `
+                <div class="blotter-card p-6 bg-white border border-gray-200 rounded-xl shadow-md">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-900">${blotter.blotterId}: ${blotter.incidentType}</h3>
+                        ${getStatusBadge(blotter.status)}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-gray-700 mb-4">
+                        <p><span class="font-semibold">Filer ID:</span> ${blotter.reporterId.substring(0, 8)}...</p>
+                        <p><span class="font-semibold">Name:</span> ${blotter.contactName} ${blotter.isAnonymous ? '(Anon)' : ''}</p>
+                        <p><span class="font-semibold">Location:</span> ${blotter.location}</p>
+                        <p><span class="font-semibold">Filed:</span> ${formatDate(blotter.createdAt)}</p>
+                        <p><span class="font-semibold">Contact:</span> ${blotter.contactNumber}</p>
+                        <p><span class="font-semibold">Last Update:</span> ${formatDate(blotter.updatedAt)}</p>
+                    </div>
+
+                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 mb-4">
+                        <p class="font-semibold text-gray-800 mb-1">Incident Details:</p>
+                        <p class="text-sm text-gray-600 whitespace-pre-wrap">${blotter.details}</p>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 items-end">
+                        <div class="flex-grow w-full sm:w-auto">
+                            <label for="status-select-${blotter.id}" class="block text-xs font-medium text-gray-500 mb-1">Update Status (Staff)</label>
+                            <select id="status-select-${blotter.id}" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                ${STATUS_OPTIONS.map(status => `
+                                    <option value="${status}" ${blotter.status === status ? 'selected' : ''}>${status}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+
+                        ${currentRole === 'Captain' ? `
+                            <div class="flex-grow w-full sm:w-auto">
+                                <label for="notes-${blotter.id}" class="block text-xs font-medium text-gray-500 mb-1">Resolution Notes (Captain)</label>
+                                <textarea id="notes-${blotter.id}" rows="1" class="w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-green-500 focus:border-green-500" placeholder="Final resolution/decision...">${blotter.resolutionNotes || ''}</textarea>
+                            </div>
+                            <button id="resolve-btn-${blotter.id}" class="w-full sm:w-auto whitespace-nowrap bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg text-sm shadow-md transition duration-150">
+                                Review & Approve
+                            </button>
+                        ` : ''}
+                    </div>
+                    ${blotter.resolutionNotes ? `<p class="mt-4 text-xs text-gray-500 italic">Resolution: ${blotter.resolutionNotes}</p>` : ''}
+                </div>
+            `;
+        }
+
+        function CustomModal() {
+            if (!modal.isOpen) return '';
+
+            const handleConfirm = () => {
+                if (modal.onConfirm) modal.onConfirm();
+                // Note: closeModal() is usually called inside onConfirm if successful, but we close here if no confirm action is provided.
+                if (!modal.onConfirm) closeModal();
+            };
+
+            // Attach event listeners after rendering
+            setTimeout(() => {
+                const confirmBtn = document.getElementById('modal-confirm-btn');
+                const cancelBtn = document.getElementById('modal-cancel-btn');
+                if (confirmBtn) confirmBtn.onclick = handleConfirm;
+                if (cancelBtn) cancelBtn.onclick = closeModal;
+            }, 0);
+
+            return `
+                <div class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4" onclick="window.closeModal()">
+                    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-auto" onclick="event.stopPropagation()">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-3">${modal.title}</h3>
+                            <p class="text-gray-600 mb-6">${modal.message}</p>
+                            <div class="flex justify-end space-x-3">
+                                <button id="modal-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition duration-150">
+                                    ${modal.onConfirm ? 'Cancel' : 'Close'}
+                                </button>
+                                ${modal.onConfirm ? `
+                                    <button id="modal-confirm-btn" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition duration-150">
+                                        ${modal.confirmText}
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        function renderApp() {
+            const appElement = document.getElementById('app');
+            if (appElement) {
+                appElement.innerHTML = App();
+            }
+        }
+
+        // --- GLOBAL EXPORTS AND INITIALIZATION ---
+        window.setView = setView;
+        window.setRole = setRole;
+        window.submitNewBlotter = submitNewBlotter;
+        window.updateBlotter = updateBlotter;
+        window.showModal = showModal;
+        window.closeModal = closeModal;
+
+        document.addEventListener('DOMContentLoaded', setupFirebase);
     </script>
 </body>
 </html>
