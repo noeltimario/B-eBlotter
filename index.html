@@ -3,183 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eBlotter System Flowchart Table</title>
+    <title>Barangay eBlotter Business Model Canvas</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom font for a modern look */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        /* Custom font for a clean, modern look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* Light gray background */
+            background-color: #f8fafc; /* Very light background */
         }
 
-        /* Basic box styling, minimal on mobile, then configure borders/shadows for desktop */
-        .flow-box {
-            min-height: 400px; 
-            padding: 1.5rem;
-            border: 2px solid #ccc;
-            /* Flex layout to center content vertically/handle padding */
+        /* Desktop Layout (Main BMC Table Structure) */
+        .canvas-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* 5 equal columns for Key Partners, Activities/Resources, Value Prop, Relationships/Channels, Segments */
+            /* CHANGED: R3 (bottom) height is now 'auto' to fit content, fixing the overflow issue. */
+            grid-template-rows: auto auto auto; 
+            gap: 0; /* No gaps between cells (contiguous table look) */
+            border-top: 2px solid #000; /* Main top border */
+            border-left: 2px solid #000; /* Main left border */
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .canvas-module {
+            background-color: white;
+            padding: 1rem;
+            border-right: 2px solid #000; /* Vertical divider */
+            border-bottom: 2px solid #000; /* Horizontal divider */
+            min-height: 120px;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
         }
 
-        /* Mobile Layout: Stacked cards with space and rounded corners */
-        .flow-box {
-            margin-bottom: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        /* Grid Area Assignments (Matching the 9-Block Visual Layout) */
+        /* grid-area: row-start / column-start / row-end / column-end */
+        .module-partners { grid-area: 1 / 1 / 3 / 2; } /* Spans R1 & R2, C1 */
+        .module-activities { grid-area: 1 / 2 / 2 / 3; } /* R1, C2 */
+        .module-resources { grid-area: 2 / 2 / 3 / 3; } /* R2, C2 (aligned under Activities) */
+        .module-value { grid-area: 1 / 3 / 3 / 4; } /* Spans R1 & R2, C3 (Centerpiece) */
+        .module-relationships { grid-area: 1 / 4 / 2 / 5; } /* R1, C4 */
+        .module-channels { grid-area: 2 / 4 / 3 / 5; } /* R2, C4 (aligned under Relationships) */
+        .module-segments { grid-area: 1 / 5 / 3 / 6; } /* Spans R1 & R2, C5 */
+        
+        /* FIX: Cost Structure now spans C1, C2, and C3 (3/5ths total) to accommodate longer content. */
+        .module-costs { 
+            grid-area: 3 / 1 / 4 / 4; /* R3, Spans C1-C3 */
+        } 
+        /* FIX: Revenue Streams gets the remaining C4 and C5 (2/5ths total). */
+        .module-revenue { 
+            grid-area: 3 / 4 / 4 / 6; /* R3, Spans C4-C5 */
         }
         
-        /* Desktop Layout (md and up): Horizontal, contiguous boxes with sharp corners */
-        @media (min-width: 768px) {
-            .flow-container {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr; /* 3 equal columns */
-                gap: 0; /* Remove gap */
-                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Single shadow around the whole block */
-                border: 2px solid #ccc; /* Border around the whole block */
-            }
-
-            .flow-box {
-                margin-bottom: 0; /* No margin between boxes */
-                border-radius: 0; /* Sharp corners for contiguous look */
-                border: none; /* Remove individual box borders, let the container handle it */
-                min-height: 450px;
-                /* Vertical divider lines between boxes */
-                border-right: 2px solid #ccc;
-            }
-            /* Remove the right border on the last box */
-            .flow-box:last-child {
-                border-right: none;
-            }
-
-            /* Add the horizontal arrow connector */
-            .flow-header {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                position: relative;
-            }
-            /* Pseudo-element to draw the arrow head bridging the boxes */
-            .flow-box:not(:last-child) .flow-header::after {
-                content: '';
-                position: absolute;
-                right: -2px; /* Position at the border */
-                top: 50%;
-                transform: translateY(-50%) translateX(100%) rotate(-45deg);
-                
-                /* Draw an arrow head */
-                width: 10px;
-                height: 10px;
-                background-color: white; /* Use white to "cut" the border line for the arrow */
-                border-right: 2px solid #ccc;
-                border-bottom: 2px solid #ccc;
-                z-index: 10;
-            }
-
-            /* Mobile Vertical Arrow for stacked design */
-            .mobile-arrow {
-                display: none;
-            }
+        .canvas-title {
+            font-weight: 700;
+            font-size: 1.125rem;
+            margin-bottom: 0.75rem;
+            color: #000;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 0.5rem;
         }
-
-        /* Mobile Vertical Arrow for stacked design */
+        
+        /* Mobile Layout: Stack all nine elements vertically, simple boxes */
         @media (max-width: 767px) {
-            .mobile-arrow {
-                height: 3rem;
-                width: 4px;
-                background-color: #3b82f6; 
-                margin: 0 auto 1rem auto;
-                position: relative;
+            .canvas-container {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                border: none;
             }
-            .mobile-arrow::after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 50%;
-                transform: translateX(-50%) translateY(100%) rotate(45deg);
-                width: 10px;
-                height: 10px;
-                border-right: 4px solid #3b82f6;
-                border-bottom: 4px solid #3b82f6;
-                border-top: 0;
-                border-left: 0;
+            .canvas-module {
+                border: 2px solid #000;
+                border-radius: 0.25rem;
             }
         }
     </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen">
+<body class="p-4 md:p-8">
 
-    <div class="max-w-7xl mx-auto bg-white rounded-xl p-0 md:p-10">
-
-        <header class="text-center mb-6 md:mb-10 pt-4 md:pt-0">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 tracking-tight mb-2">
-                Barangay eBlotter System Flowchart
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-4 md:mb-8">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
+                Business Model Canvas
             </h1>
         </header>
-        
-        <!-- Table Caption 1 (Matches image) -->
-        <p class="text-center text-lg font-semibold text-gray-600 mb-6 md:mb-10">
-            Table 3: Flow Chart
-        </p>
 
-        <!-- Flowchart Container: Horizontal on Desktop, Stacked on Mobile -->
-        <div class="flow-container mx-auto md:max-w-7xl">
+        <!-- Business Model Canvas Grid -->
+        <div class="canvas-container mx-auto">
 
-            <!-- 1. INPUT STAGE -->
-            <div class="flow-box bg-white">
-                <h2 class="flow-header text-xl font-bold text-gray-800 mb-6 text-center pb-2 border-b">
-                    INPUT
-                </h2>
-                <ul class="list-disc list-inside space-y-3 text-gray-700 ml-4 text-base">
-                    <li>Identification of problems in manual blotter recording.</li>
-                    <li>Data collection from barangay staff and residents via interviews and surveys.</li>
-                    <li>Analysis of data to determine system requirements and desired features.</li>
-                    <li>Existing Barangay Ordinances & Legal Frameworks.</li>
+            <!-- 1. Key Partners -->
+            <div class="canvas-module module-partners">
+                <h3 class="canvas-title">Key Partners</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>Barangay Council (Legislation & Adoption)</li>
+                    <li>Local Philippine National Police (PNP) for formal referencing.</li>
+                    <li>Lupong Tagapamayapa (Mediation & Dispute Resolution)</li>
+                    <li>Local IT/Tech Volunteers (Initial Support & Maintenance)</li>
                 </ul>
             </div>
 
-            <!-- Mobile Arrow 1 -->
-            <div class="mobile-arrow"></div>
-
-            <!-- 2. PROCESS STAGE -->
-            <div class="flow-box bg-white">
-                <h2 class="flow-header text-xl font-bold text-gray-800 mb-6 text-center pb-2 border-b">
-                    PROCESS
-                </h2>
-                <ul class="list-disc list-inside space-y-3 text-gray-700 ml-4 text-base">
-                    <li>Design system workflow and interface (UI/UX + ERD).</li>
-                    <li>Agile Iterative Development Model (Plan &rarr; Design &rarr; Develop &rarr; Test &rarr; Evaluate).</li>
-                    <li>Implementation and Testing: unit testing, integration testing, alpha testing, and acceptance testing.</li>
-                    <li>Deployment to local server or cloud technologies.</li>
+            <!-- 2. Key Activities -->
+            <div class="canvas-module module-activities">
+                <h3 class="canvas-title">Key Activities</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>Software Development and Maintenance.</li>
+                    <li>User Training (Security & Analytics).</li>
+                    <li>Data Encryption & PDPA Compliance (Philippines Data Privacy Act of 2012).</li>
+                    <li>Continuous Content Updates (Local Ordinances).</li>
                 </ul>
             </div>
 
-            <!-- Mobile Arrow 2 -->
-            <div class="mobile-arrow"></div>
+            <!-- 3. Value Proposition (Centerpiece) -->
+            <div class="canvas-module module-value">
+                <h3 class="canvas-title text-center">Value Proposition</h3>
+                <p class="font-bold text-base text-gray-800 mb-2">
+                    Secure, Transparent, and Efficient Incident Reporting.
+                </p>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>24/7 instant reporting access (Mobile-friendly).</li>
+                    <li>Automated report generation (monthly/annual submissions).</li>
+                    <li>Integration of AI-driven insights to identify case trends and high-risk areas.</li>
+                    <li>Empowers officials with reliable data for proactive governance.</li>
+                </ul>
+            </div>
+            
+            <!-- 4. Customer Relationships -->
+            <div class="canvas-module module-relationships">
+                <h3 class="canvas-title">Customer Relationships</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>Real-time status updates via system notifications (SMS/email).</li>
+                    <li>Personalized case management dashboards.</li>
+                    <li>Conversational chatbot interface for submissions and updates.</li>
+                    <li>Formal Orientation Programs at the Barangay Hall.</li>
+                </ul>
+            </div>
 
-            <!-- 3. OUTPUT STAGE -->
-            <div class="flow-box bg-white">
-                <h2 class="flow-header text-xl font-bold text-gray-800 mb-6 text-center pb-2 border-b">
-                    OUTPUT
-                </h2>
-                <ul class="list-disc list-inside space-y-3 text-gray-700 ml-4 text-base">
-                    <li class="font-semibold">Barangay eBlotter System</li>
-                    <li>A Web-Based Digital Platform to Improve Incident and Complaint Reporting.</li>
-                    <li>Enhance Transparency and Improve Administrative Processes in the Barangay.</li>
-                    <li>User Training & Feedback Integration.</li>
+            <!-- 5. Customer Segments -->
+            <div class="canvas-module module-segments">
+                <h3 class="canvas-title">Customer Segments</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>Barangay Officials and Staff (Managers/Processors).</li>
+                    <li>Lupong Tagapamayapa (Mediators/Resolvers).</li>
+                    <li>All Barangay Residents (Complainants, respondents, witnesses).</li>
+                </ul>
+            </div>
+            
+            <!-- 6. Key Resources -->
+            <div class="canvas-module module-resources">
+                <h3 class="canvas-title">Key Resources</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>Web/Mobile Platform (Software Asset)</li>
+                    <li>Secure Database and Server Infrastructure.</li>
+                    <li>Skilled Developers and Maintenance Personnel.</li>
+                    <li>Legal/Compliance Expertise (PDPA, Ordinances).</li>
+                </ul>
+            </div>
+
+            <!-- 7. Channels -->
+            <div class="canvas-module module-channels">
+                <h3 class="canvas-title">Channels</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>Official Barangay Website/URL.</li>
+                    <li>Mobile Application Stores (if deployed natively).</li>
+                    <li>Information dissemination via Barangay health centers.</li>
+                    <li>Barangay Social Media Pages.</li>
+                </ul>
+            </div>
+            
+            <!-- 8. Cost Structure (Bottom Left) -->
+            <div class="canvas-module module-costs">
+                <h3 class="canvas-title">Cost Structure</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>Initial System Development and Design.</li>
+                    <li>Server Hosting and Maintenance (Data persistence/security).</li>
+                    <li>Continuous Data Security Measures and Audits (Compliance).</li>
+                    <li>Training Materials and Labor for Staff Onboarding.</li>
+                </ul>
+            </div>
+
+            <!-- 9. Revenue Streams (Bottom Right) -->
+            <div class="canvas-module module-revenue">
+                <h3 class="canvas-title">Funding Model (Revenue Streams)</h3>
+                <ul class="list-disc list-inside space-y-2 text-sm text-gray-700">
+                    <li>Mandated Annual Barangay Budget Allocation (Public safety/digitalization).</li>
+                    <li>Potential Grants from Local Government Units (LGUs) for e-governance.</li>
+                    <li>Corporate Social Responsibility (CSR) funding from private sector partners.</li>
                 </ul>
             </div>
             
         </div>
-        <!-- End Flowchart Container -->
+        <!-- End Business Model Canvas Grid -->
         
-        <!-- Bottom Caption 2 (Matches image) -->
+        <!-- Table Caption -->
         <p class="text-center text-lg font-semibold text-gray-600 mt-6 md:mt-2">
-            Flow Chart
+            Table 4: Business Model Canvas
         </p>
+
     </div>
 </body>
 </html>
